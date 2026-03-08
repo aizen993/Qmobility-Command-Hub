@@ -523,107 +523,57 @@ Your repo: <code style="color:var(--cyn)">aizen993.github.io/Qmobility-Command-H
 <!-- ===== TASKS PAGE ===== -->
 <div id="p-tasks" class="pg" style="display:none">
 <style>
-.task-skill-chip{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px;font-family:var(--mono);cursor:pointer;user-select:none;transition:all .12s}
-.task-skill-chip.off{background:var(--s3);color:var(--tx3);border:1px solid var(--brd)}
-.task-skill-chip.on{border:1px solid currentColor}
-.task-agent-row{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:7px;background:var(--s2);margin-bottom:4px;flex-wrap:wrap}
-.task-week-col{display:flex;flex-direction:column;gap:3px;min-width:80px}
-.task-day-badge{font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:4px;text-align:center;font-family:var(--mono)}
-.task-result-row{display:grid;grid-template-columns:1fr repeat(14,minmax(38px,1fr));gap:2px;align-items:center;margin-bottom:2px;font-size:11px}
-.task-cell{font-size:9.5px;font-weight:700;padding:3px 4px;border-radius:4px;text-align:center;font-family:var(--mono);min-width:34px;white-space:nowrap}
-.tasks-section-head{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--tx3);padding:6px 0 4px;margin-top:4px}
-.tk-stat{background:var(--s2);border:var(--card-border);border-radius:var(--r-sm);padding:12px;text-align:center}
-.tk-stat-val{font-size:22px;font-weight:800;color:#fff;line-height:1;margin-top:4px}
-.tk-stat-label{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--tx3);font-family:var(--mono)}
+.tk-card{background:var(--s2);border:var(--card-border);border-radius:10px;padding:12px;cursor:default;transition:all .15s;position:relative}
+.tk-card:hover{background:var(--s3);transform:translateY(-1px);box-shadow:var(--shadow)}
+.tk-card .tk-name{font-size:12px;font-weight:600;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tk-card .tk-chips{display:flex;flex-wrap:wrap;gap:3px}
+.tk-chip{font-size:8.5px;font-weight:700;padding:1px 6px;border-radius:8px;font-family:var(--mono);cursor:pointer;user-select:none;transition:all .12s;border:1px solid transparent}
+.tk-chip.off{background:var(--s3);color:var(--tx3);border-color:var(--brd);opacity:.6}
+.tk-chip.on{opacity:1}
+.tk-type-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;margin-bottom:6px;background:var(--s2);border-left:4px solid var(--acc)}
+.tk-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.tk-stat-box{background:var(--s2);border:var(--card-border);border-radius:var(--r-sm);padding:10px;text-align:center}
+.tk-stat-box .val{font-size:20px;font-weight:800;color:#fff}
+.tk-stat-box .lbl{font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--tx3);font-family:var(--mono)}
 </style>
 
-<!-- Task Page Header -->
-<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px">
-  <div>
-    <h2 style="font-size:20px;font-weight:800;letter-spacing:-.3px">🌟 Task & Location Planner</h2>
-    <p style="font-size:12px;color:var(--tx2);margin-top:3px">Assign special tasks, locations & skills to agents</p>
-  </div>
-  <div style="display:flex;gap:6px;flex-wrap:wrap">
-    <button class="btn bp" onclick="runTaskShuffle()">🎲 Shuffle & Assign</button>
-    <button class="btn bg bsm" onclick="exportTasksCSV()">📥 CSV</button>
-    <button class="btn bs2 bsm" onclick="clearTaskPlan()">🗑 Clear</button>
-  </div>
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+  <div><h2 style="font-size:18px;font-weight:800;letter-spacing:-.3px">🌟 Task & Location Planner</h2>
+  <p style="font-size:11.5px;color:var(--tx2);margin-top:2px">Assign tasks, locations & skills to agents</p></div>
+  <div style="display:flex;gap:6px"><button class="btn bp" onclick="runTaskShuffle()">🎲 Shuffle & Assign</button><button class="btn bg bsm" onclick="exportTasksCSV()">📥 CSV</button><button class="btn bs2 bsm" onclick="clearTaskPlan()">🗑 Clear</button></div>
 </div>
 
-<!-- Quick Stats -->
-<div id="tk-stats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
-  <div class="tk-stat"><div class="tk-stat-label">Task Types</div><div class="tk-stat-val" id="tkStatTypes">0</div></div>
-  <div class="tk-stat"><div class="tk-stat-label">Agents</div><div class="tk-stat-val" id="tkStatAgents">0</div></div>
-  <div class="tk-stat" style="--p5-accent:var(--grn)"><div class="tk-stat-label">Assigned</div><div class="tk-stat-val" style="color:var(--grn)" id="tkStatAssigned">0</div></div>
-  <div class="tk-stat"><div class="tk-stat-label">Unassigned</div><div class="tk-stat-val" style="color:var(--orn)" id="tkStatUnassigned">0</div></div>
+<div class="tk-stat-grid" id="tkStats">
+  <div class="tk-stat-box"><div class="lbl">Types</div><div class="val" id="tkS1">0</div></div>
+  <div class="tk-stat-box"><div class="lbl">Agents</div><div class="val" id="tkS2">0</div></div>
+  <div class="tk-stat-box"><div class="lbl">Assigned</div><div class="val" style="color:var(--grn)" id="tkS3">—</div></div>
+  <div class="tk-stat-box"><div class="lbl">Unassigned</div><div class="val" style="color:var(--orn)" id="tkS4">—</div></div>
 </div>
 
-<!-- Tabs -->
-<div style="display:flex;gap:2px;margin-bottom:16px;background:var(--s2);border-radius:8px;padding:3px;border:var(--card-border)">
+<div style="display:flex;gap:2px;margin-bottom:14px;background:var(--s2);border-radius:8px;padding:3px;border:var(--card-border)">
   <button class="btn bsm" id="tktab-config" onclick="taskTab('config')" style="flex:1;background:linear-gradient(135deg,rgba(79,142,247,.2),rgba(34,211,238,.1));color:#fff;border:1px solid rgba(79,142,247,.4)">⚙️ Configure</button>
   <button class="btn bs2 bsm" id="tktab-skills" onclick="taskTab('skills')" style="flex:1">🏷 Agent Skills</button>
   <button class="btn bs2 bsm" id="tktab-results" onclick="taskTab('results')" style="flex:1">📋 Results</button>
 </div>
 
-<!-- CONFIG TAB -->
+<!-- CONFIG -->
 <div id="tk-config">
-<!-- Task Types Card -->
-<div class="card" style="margin-bottom:12px">
-  <div class="ch" style="display:flex;justify-content:space-between;align-items:center">
-    <h3>📌 Task / Location Types</h3>
-    <button class="btn bp bsm" onclick="addTaskType()">+ Add</button>
-  </div>
-  <div class="cb">
-    <p style="font-size:11.5px;color:var(--tx2);margin-bottom:10px">Define the types of tasks or locations you want to assign. Each type gets a quota (how many agents) and optional filters.</p>
-    <div id="tk-types-list"></div>
-  </div>
+  <div class="card" style="margin-bottom:10px"><div class="ch" style="display:flex;justify-content:space-between"><h3>📌 Task Types</h3><button class="btn bp bsm" onclick="addTaskType()">+ Add</button></div><div class="cb"><div id="tk-types-list"></div></div></div>
+  <div class="card" style="margin-bottom:10px"><div class="ch"><h3>📅 Week Range</h3></div><div class="cb"><div class="fr" style="align-items:flex-end;gap:14px"><div class="fg"><label>Week 1 starts</label><input type="date" id="tk-w1" style="width:148px"></div><label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;padding-bottom:4px"><input type="checkbox" id="tk-twoweeks" onchange="renderTaskWeekOptions()"> Week 2</label></div><div id="tk-week2-note" style="display:none;margin-top:6px;font-size:11px;color:var(--cyn)">✓ Covers 2 weeks</div></div></div>
+  <div class="card" style="margin-bottom:10px"><div class="ch"><h3>🔧 Global Constraints</h3></div><div class="cb"><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"><label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:11.5px;background:var(--s2);padding:7px 10px;border-radius:6px;border:var(--card-border)"><input type="checkbox" id="tk-girls-home"> <b style="color:#c4b5fd">♀</b> → WFH</label><label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:11.5px;background:var(--s2);padding:7px 10px;border-radius:6px;border:var(--card-border)"><input type="checkbox" id="tk-boys-home"> <b style="color:#93c5fd">♂</b> → WFH</label><label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:11.5px;background:var(--s2);padding:7px 10px;border-radius:6px;border:var(--card-border)"><input type="checkbox" id="tk-boys-office"> <b style="color:#93c5fd">♂</b> → Office</label></div></div></div>
 </div>
 
-<!-- Week Range Card -->
-<div class="card" style="margin-bottom:12px">
-  <div class="ch"><h3>📅 Week Range</h3></div>
-  <div class="cb">
-    <div class="fr" style="gap:16px;flex-wrap:wrap;align-items:flex-end">
-      <div class="fg"><label>Week 1 starts</label><input type="date" id="tk-w1" style="width:148px"></div>
-      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;padding-bottom:4px">
-        <input type="checkbox" id="tk-twoweeks" onchange="renderTaskWeekOptions()"> Include Week 2
-      </label>
-    </div>
-    <div id="tk-week2-note" style="display:none;margin-top:8px;font-size:11.5px;color:var(--cyn)">✓ Planning covers both weeks</div>
-  </div>
-</div>
-
-<!-- Global Filters -->
-<div class="card" style="margin-bottom:12px">
-  <div class="ch"><h3>🔧 Global Constraints</h3></div>
-  <div class="cb">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;background:var(--s2);padding:8px 10px;border-radius:6px;border:var(--card-border)"><input type="checkbox" id="tk-girls-home"> All <b style="color:#c4b5fd">Female</b> → WFH</label>
-      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;background:var(--s2);padding:8px 10px;border-radius:6px;border:var(--card-border)"><input type="checkbox" id="tk-boys-home"> All <b style="color:#93c5fd">Male</b> → WFH</label>
-      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;background:var(--s2);padding:8px 10px;border-radius:6px;border:var(--card-border)"><input type="checkbox" id="tk-boys-office"> All <b style="color:#93c5fd">Male</b> → Office</label>
-    </div>
-    <p style="font-size:10px;color:var(--tx3);margin-top:8px">ℹ️ Gender overrides apply before any task quota is distributed.</p>
-  </div>
-</div>
-</div><!-- end tk-config -->
-
-<!-- SKILLS TAB -->
+<!-- SKILLS as Agent Cards Grid -->
 <div id="tk-skills" style="display:none">
-<div class="card">
-  <div class="ch"><h3>🏷 Agent Skill & Attribute Tags</h3></div>
-  <div class="cb">
-    <p style="font-size:11.5px;color:var(--tx2);margin-bottom:12px">Tag each agent with their skills. Used as filters when assigning tasks.</p>
-    <div id="tk-agent-skills-list"></div>
+  <div class="card"><div class="ch" style="display:flex;justify-content:space-between;align-items:center"><h3>🏷 Agent Skills</h3>
+    <div style="display:flex;gap:4px;flex-wrap:wrap"><select id="tkSkillFilter" style="font-size:10px;padding:3px 6px;width:auto" onchange="renderTaskAgentSkills()"><option value="">All</option><option value="F">♀ Female</option><option value="M">♂ Male</option></select></div>
   </div>
-</div>
+  <div class="cb"><div id="tk-agent-skills-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px"></div></div></div>
 </div>
 
-<!-- RESULTS TAB -->
-<div id="tk-results" style="display:none">
-  <div id="tk-results-area"><div class="emp">No results yet. Go to <b>Configure</b> and click <b>🎲 Shuffle & Assign</b>.</div></div>
-</div>
-</div>
-<!-- Old skills HTML removed - structure is in the new task page above -->
+<!-- RESULTS -->
+<div id="tk-results" style="display:none"><div id="tk-results-area"><div class="emp">Click <b>🎲 Shuffle & Assign</b> to generate.</div></div></div>
+</div><!-- end p-tasks -->
 
 <div id="p-archive" class="pg" style="display:none"><div class="ph" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px"><div><h2>Week Archive</h2><p>Saved schedules. Load any past week or import from file.</p></div><div style="display:flex;gap:6px"><button class="btn bp bsm" onclick="importWeekFile()">&#128194; Import JSON</button><input type="file" id="impFile" accept=".json" style="display:none" onchange="handleImport(event)"></div></div><div class="card"><div class="cb" id="archList"><div class="emp">No saved weeks yet. Generate a roster and click <b>Save Week</b>.</div></div></div></div>
 
@@ -894,38 +844,18 @@ Your repo: <code style="color:var(--cyn)">aizen993.github.io/Qmobility-Command-H
   <div id="ctrl-rules">
     <div class="card"><div class="ch"><h3>Weekly Limits</h3></div><div class="cb"><div class="fr"><label style="width:220px">Max OFF / agent / week</label><input type="number" id="rMO2" min="0" max="7" value="2"></div><div class="fr"><label style="width:220px">Max working days / agent / week</label><input type="number" id="rMW2" min="1" max="7" value="5"></div><button class="btn bp bsm" style="margin-top:8px" onclick="saveRules2()">Save</button></div></div>
     <div class="card"><div class="ch"><h3>Gender → Shift Restrictions</h3></div><div class="cb" id="grArea2"></div></div>
-    <!-- Office / WFH Rules Card -->
-    <div class="card" style="margin-top:12px;border-left:3px solid var(--acc)">
-      <div class="ch"><h3>🏢 Office / WFH Assignment Rules</h3></div>
-      <div class="cb">
-        <p style="font-size:11.5px;color:var(--tx2);margin-bottom:12px">Configure how agents are assigned Office vs WFH each day. Rules apply during schedule generation.</p>
-        <div class="fr" style="margin-bottom:10px">
-          <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="officeEnabled" onchange="toggleOfficeRules(this.checked)"> <span style="font-weight:600">Enable Office/WFH Assignment</span></label>
+    <div class="card" style="margin-top:10px;border-left:3px solid var(--acc)"><div class="ch"><h3>🏢 Office / WFH Rules</h3></div><div class="cb">
+      <div class="fr" style="margin-bottom:8px"><label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="officeEnabled" onchange="D.officeRules=D.officeRules||{};D.officeRules.enabled=this.checked;document.getElementById('officeBody').style.display=this.checked?'block':'none';saveAndSync()"> <b>Enable Office/WFH Assignment</b></label></div>
+      <div id="officeBody" style="display:none">
+        <div style="background:var(--s2);border-radius:8px;padding:10px;margin-bottom:8px">
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;margin-bottom:4px"><input type="checkbox" id="ofc1" checked onchange="D.officeRules.earlyMaleMustOffice=this.checked;saveAndSync()"> 7AM A-shift male → Office</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;margin-bottom:4px"><input type="checkbox" id="ofc2" checked onchange="D.officeRules.msMustOffice=this.checked;saveAndSync()"> MS shift → Office</label>
+          <div class="fr"><label style="font-size:12px">B shift min Office:</label><input type="number" id="ofc3" min="0" max="10" value="2" style="width:55px" onchange="D.officeRules.bMinOffice=+this.value;saveAndSync()"></div>
         </div>
-        <div id="officeRulesBody" style="display:none">
-          <div style="background:var(--s2);border-radius:8px;padding:12px;margin-bottom:10px">
-            <div style="font-size:10px;font-weight:700;color:var(--cyn);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Mandatory Office Rules</div>
-            <div class="fr" style="margin-bottom:6px">
-              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px"><input type="checkbox" id="officeEarlyMale" checked onchange="saveOfficeRules()"> 7 AM (A shift, first agent) must be <b style="color:#93c5fd">Male</b> + <b style="color:#4f8ef7">Office</b></label>
-            </div>
-            <div class="fr" style="margin-bottom:6px">
-              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px"><input type="checkbox" id="officeMSMust" checked onchange="saveOfficeRules()"> MS shift must be <b style="color:#4f8ef7">Office</b></label>
-            </div>
-            <div class="fr" style="margin-bottom:6px">
-              <label style="display:flex;align-items:center;gap:5px;font-size:12px">B shift minimum <b style="color:#4f8ef7">Office</b> agents:</label>
-              <input type="number" id="officeBMin" min="0" max="10" value="2" style="width:55px" onchange="saveOfficeRules()">
-            </div>
-          </div>
-          <div style="background:var(--s2);border-radius:8px;padding:12px">
-            <div style="font-size:10px;font-weight:700;color:var(--orn);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Fairness & Rotation</div>
-            <div class="fr">
-              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px"><input type="checkbox" id="officeFairRotation" checked onchange="saveOfficeRules()"> Fair weekly rotation (2 office days → 3 next week)</label>
-            </div>
-            <p style="font-size:10.5px;color:var(--tx3);margin-top:6px">Remaining working agents not covered by mandatory rules → <b style="color:#f5a623">Work From Home</b></p>
-          </div>
-        </div>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px"><input type="checkbox" id="ofc4" checked onchange="D.officeRules.fairRotation=this.checked;saveAndSync()"> Fair daily rotation</label>
+        <p style="font-size:10px;color:var(--tx3);margin-top:4px">Remaining agents → WFH. Office rotates daily.</p>
       </div>
-    </div>
+    </div></div>
   </div>
   <div id="ctrl-bksettings" style="display:none"><div id="bkSettingsArea"></div></div>
 </div>
@@ -1407,7 +1337,8 @@ document.getElementById("sideNav").addEventListener("click",e=>{const ni=e.targe
     if(srW&&!srW.value){srW.value=document.getElementById("wkStart")?.value||new Date().toISOString().split("T")[0];}
     renderRequestsPage();
   }
-  if(p==="control"){renderGR();renderGR2();loadOfficeRules();setTimeout(()=>{const mo=document.getElementById("rMO"),mw=document.getElementById("rMW"),mo2=document.getElementById("rMO2"),mw2=document.getElementById("rMW2");if(mo&&mo2)mo2.value=mo.value;if(mw&&mw2)mw2.value=mw.value;},50)}
+  if(p==="control"){renderGR();renderGR2();
+    if(D.officeRules){const _oe=document.getElementById("officeEnabled");if(_oe)_oe.checked=D.officeRules.enabled||false;const _ob=document.getElementById("officeBody");if(_ob)_ob.style.display=D.officeRules.enabled?"block":"none";const _o1=document.getElementById("ofc1");if(_o1)_o1.checked=D.officeRules.earlyMaleMustOffice!==false;const _o2=document.getElementById("ofc2");if(_o2)_o2.checked=D.officeRules.msMustOffice!==false;const _o3=document.getElementById("ofc3");if(_o3)_o3.value=D.officeRules.bMinOffice||2;const _o4=document.getElementById("ofc4");if(_o4)_o4.checked=D.officeRules.fairRotation!==false;}setTimeout(()=>{const mo=document.getElementById("rMO"),mw=document.getElementById("rMW"),mo2=document.getElementById("rMO2"),mw2=document.getElementById("rMW2");if(mo&&mo2)mo2.value=mo.value;if(mw&&mw2)mw2.value=mw.value;},50)}
   if(p==="breaks"){brkSwitch("bkday")}
   if(p==="people"){
     // Populate agent selects before switching
@@ -1426,538 +1357,320 @@ function _shiftMins(sid){const s=D.shifts.find(x=>x.id===sid);if(!s)return null;
 function _restOk(s1,s2){if(!s1||!s2)return true;const a=_shiftMins(s1),b=_shiftMins(s2);if(!a||!b)return true;const rest=(b.s+1440)-a.e;return rest>=720}
 function _checkRest(sch,ai,wk){for(let di=0;di<6;di++){const s1=sch[ai][di],s2=sch[ai][di+1];if(wk.includes(s1)&&wk.includes(s2)&&!_restOk(s1,s2))return false}return true}
 
-// ── Get previous week's roster for cross-week consecutive check ─────────
-function _getPrevWeekRoster(ws){
-  if(!ws)return null;
-  const d=new Date(ws+"T12:00:00");d.setDate(d.getDate()-7);
-  const prevWs=d.toISOString().split("T")[0];
-  try{
-    const list=loadArchiveList();const snap=list.find(x=>x.week===prevWs);
-    if(snap&&snap.data&&snap.data.roster)return snap.data.roster;
-  }catch(e){}
-  return null;
-}
-
-// ── Fix AL aid fields before solving ────────────────────────────────────
+// Fix AL aid fields before solving
 function _fixALAids(){
   const nameToId={};D.agents.forEach(a=>{nameToId[a.name.toLowerCase().trim()]=a.id});
-  D.al.forEach(al=>{
-    if(!al.aid||al.aid===""){
-      if(al.name){const id=nameToId[al.name.toLowerCase().trim()];if(id)al.aid=id;}
-    }
-  });
+  D.al.forEach(al=>{if(!al.aid||al.aid===""){if(al.name){const id=nameToId[al.name.toLowerCase().trim()];if(id)al.aid=id;}}});
 }
 
-// ── Office/WFH assignment rules ─────────────────────────────────────────
+// Office/WFH default config
 if(!D.officeRules)D.officeRules={enabled:false,earlyMaleMustOffice:true,msMustOffice:true,bMinOffice:2,fairRotation:true};
 
-function _assignOfficeWFH(roster,weekDates){
+function _assignOfficeWFH(roster){
   if(!D.officeRules||!D.officeRules.enabled)return;
   const wk=workIds();
-  const prevWeekRoster=_getPrevWeekRoster(document.getElementById("wkStart")?.value);
-  // Count previous week office days per agent
-  const prevOfficeDays={};
-  if(prevWeekRoster&&D.officeRules.fairRotation){
-    prevWeekRoster.forEach(r=>{
-      let cnt=0;DAYS.forEach(d=>{if(r.loc&&r.loc[d]==="Office")cnt++});
-      prevOfficeDays[r.id]=cnt;
-    });
-  }
-  roster.forEach(r=>{if(!r.loc)r.loc={};DAYS.forEach(d=>r.loc[d]="")});
+  // Per day, independently assign
   DAYS.forEach((day,di)=>{
     const working=roster.filter(r=>wk.includes(r.shifts[day]));
-    // Rule 1: 7AM (A shift) first agent must be male + office
+    // Reset all
+    working.forEach(r=>{if(!r.loc)r.loc={};r.loc[day]="WFH"});
+    roster.filter(r=>!wk.includes(r.shifts[day])).forEach(r=>{if(!r.loc)r.loc={};r.loc[day]=""});
+    // Track who gets office today
+    const officeToday=new Set();
+    // Rule 1: A shift - pick a male for office (rotate daily by using day index)
     if(D.officeRules.earlyMaleMustOffice){
-      const aShiftMales=working.filter(r=>r.shifts[day]==="A"&&r.gender==="M");
-      if(aShiftMales.length>0){aShiftMales[0].loc[day]="Office";}
+      const aMales=working.filter(r=>r.shifts[day]==="A"&&r.gender==="M");
+      if(aMales.length>0){const pick=aMales[di%aMales.length];pick.loc[day]="Office";officeToday.add(pick.id);}
     }
     // Rule 2: MS must be office
     if(D.officeRules.msMustOffice){
-      working.filter(r=>r.shifts[day]==="MS").forEach(r=>{r.loc[day]="Office"});
+      working.filter(r=>r.shifts[day]==="MS").forEach(r=>{r.loc[day]="Office";officeToday.add(r.id)});
     }
-    // Rule 3: B shift must have at least 2 office
+    // Rule 3: B shift needs bMinOffice agents in office
     if(D.officeRules.bMinOffice>0){
-      const bShift=working.filter(r=>r.shifts[day]==="B"&&r.loc[day]!=="Office");
-      const bAlreadyOffice=working.filter(r=>r.shifts[day]==="B"&&r.loc[day]==="Office").length;
-      const bNeed=Math.max(0,D.officeRules.bMinOffice-bAlreadyOffice);
-      // Sort by prev office days ascending for fairness
-      const sorted=bShift.sort((a,b)=>(prevOfficeDays[a.id]||0)-(prevOfficeDays[b.id]||0));
-      sorted.slice(0,bNeed).forEach(r=>{r.loc[day]="Office"});
+      const bWorkers=working.filter(r=>r.shifts[day]==="B"&&!officeToday.has(r.id));
+      const bAlready=working.filter(r=>r.shifts[day]==="B"&&officeToday.has(r.id)).length;
+      const need=Math.max(0,(D.officeRules.bMinOffice||2)-bAlready);
+      // Rotate which B agents get office using day index
+      const sorted=[...bWorkers];
+      for(let i=0;i<need&&i<sorted.length;i++){
+        const pick=sorted[(di+i)%sorted.length];
+        pick.loc[day]="Office";officeToday.add(pick.id);
+      }
     }
-    // Remaining: WFH
-    working.filter(r=>!r.loc[day]||r.loc[day]==="").forEach(r=>{r.loc[day]="WFH"});
-    // Non-working: clear
-    roster.filter(r=>!wk.includes(r.shifts[day])).forEach(r=>{r.loc[day]=""});
   });
-  // Fair rotation: within the week, shuffle office assignments so agents alternate
-  if(D.officeRules.fairRotation){
-    // Count total office days per agent this week
-    const officeCounts={};
-    roster.forEach(r=>{let cnt=0;DAYS.forEach(d=>{if(r.loc[d]==="Office")cnt++});officeCounts[r.id]=cnt});
-  }
 }
 
 function solve(randomize){
   _fixALAids();
   const agents=D.agents,N=agents.length,wk=workIds(),all=allIds();
   const maxOff=D.rules.max_off,maxWork=D.rules.max_work;
-
-  // ── Build per-agent, per-day availability from AL (DAY-LEVEL) ─────────────
   const ws=document.getElementById("wkStart").value;
   const weekStart=ws?new Date(ws+"T12:00:00"):new Date();
   const weekDates=DAYS.map((_,i)=>{const d=new Date(weekStart);d.setDate(weekStart.getDate()+i);return d});
 
+  // Build AL per agent per day
   const alOnDay=Array.from({length:N},()=>Array(7).fill(false));
   const nameIdx={};agents.forEach((a,i)=>nameIdx[a.name.toLowerCase().trim()]=i);
   const agentIdx={};agents.forEach((a,i)=>agentIdx[a.id]=i);
-
   const pendingWarnings=[];
+
   for(const al of D.al){
     if(al.status==="Rejected"||al.status==="Completed"||al.status==="Pending")continue;
     let ai=agentIdx[al.aid];
     if(ai===undefined&&al.name)ai=nameIdx[al.name.toLowerCase().trim()];
     if(ai===undefined)continue;
-    const alStart=new Date(al.start+"T00:00:00"),alEnd=new Date(al.end+"T00:00:00");
-    for(let di=0;di<7;di++){
-      const dd=new Date(weekDates[di]);dd.setHours(0,0,0,0);
-      if(dd>=alStart&&dd<=alEnd)alOnDay[ai][di]=true;
-    }
+    const alS=new Date(al.start+"T00:00:00"),alE=new Date(al.end+"T00:00:00");
+    for(let di=0;di<7;di++){const dd=new Date(weekDates[di]);dd.setHours(0,0,0,0);if(dd>=alS&&dd<=alE)alOnDay[ai][di]=true;}
   }
   for(const al of D.al){
     if(al.status!=="Pending")continue;
-    const alStart=new Date(al.start+"T00:00:00"),alEnd=new Date(al.end+"T00:00:00");
-    for(let di=0;di<7;di++){
-      const dd=new Date(weekDates[di]);dd.setHours(0,0,0,0);
-      if(dd>=alStart&&dd<=alEnd){pendingWarnings.push(al.name+" has PENDING leave on "+DAYS[di]);break;}
-    }
-  }
-  for(const lr of (D.leaveRequests||[])){
-    if((lr.status||"")==="Approved"){
-      let ai=agentIdx[lr.agentId]??agentIdx[lr.aid];
-      if(ai===undefined&&lr.agentName)ai=nameIdx[lr.agentName.toLowerCase().trim()];
-      if(ai===undefined)continue;
-      const lrS=new Date(lr.startDate+"T00:00:00"),lrE=new Date(lr.endDate+"T00:00:00");
-      for(let di=0;di<7;di++){
-        const dd=new Date(weekDates[di]);dd.setHours(0,0,0,0);
-        if(dd>=lrS&&dd<=lrE)alOnDay[ai][di]=true;
-      }
-    }
+    const alS=new Date(al.start+"T00:00:00"),alE=new Date(al.end+"T00:00:00");
+    for(let di=0;di<7;di++){const dd=new Date(weekDates[di]);dd.setHours(0,0,0,0);if(dd>=alS&&dd<=alE){pendingWarnings.push(al.name+" has PENDING leave on "+DAYS[di]);break;}}
   }
 
-  // ── Previous week data for consecutive-day check ──────────────────────────
-  const prevRoster=_getPrevWeekRoster(ws);
-  // Build prevTrailingWork[ai] = number of consecutive work days at end of prev week
-  const prevTrailingWork=Array(N).fill(0);
-  if(prevRoster){
-    prevRoster.forEach(pr=>{
-      const ai=agentIdx[pr.id];if(ai===undefined)return;
-      let consec=0;
-      for(let di=6;di>=0;di--){
-        if(wk.includes(pr.shifts[DAYS[di]]))consec++;else break;
-      }
-      prevTrailingWork[ai]=consec;
-    });
-  }
-
-  // ── Night shift rota — STRICT queue order ─────────────────────────────────
-  // Use the nightRota weeklySchedule if it exists for this week, otherwise build from queue
+  // Night shift rota
   const nightAssign=Array(7).fill(null);
   const nightAssignAi=Array(7).fill(-1);
-  
-  const useWeeklySchedule=D.nightRota?.weeklySchedule?.length>0&&D.nightRota?.weeklyScheduleDate===ws;
-  if(useWeeklySchedule){
-    // Use exact assignments from autoRotateNight
-    D.nightRota.weeklySchedule.forEach(s=>{
-      const di=DAYS.indexOf(s.day);if(di<0)return;
-      const ai=agentIdx[s.agentId];if(ai===undefined)return;
-      if(alOnDay[ai][di])return;
-      nightAssign[di]=s.agentId;
-      nightAssignAi[di]=ai;
-    });
-  }else{
-    // Fallback: pick from queues per day
-    const wdQueue=[...(D.nightRota?.rotationOrder||[])];
-    const weQueue=[...(D.nightRota?.rotationWeekend||[])];
-    for(let di=0;di<7;di++){
-      const isWeekend=["Sat","Sun"].includes(DAYS[di]);
-      const queue=isWeekend?weQueue:wdQueue;
-      if(!queue.length)continue;
-      for(let qi=0;qi<queue.length;qi++){
-        const agId=queue[qi];const ai=agentIdx[agId];
-        if(ai===undefined)continue;if(alOnDay[ai][di])continue;
-        const gAllowed=D.genderRules[agents[ai].gender]||[];
-        if(gAllowed.length&&!gAllowed.includes("C"))continue;
-        nightAssign[di]=agId;nightAssignAi[di]=ai;
-        queue.splice(qi,1);queue.push(agId);break;
-      }
+  const wdQ=[...(D.nightRota?.rotationOrder||[])];
+  const weQ=[...(D.nightRota?.rotationWeekend||[])];
+  for(let di=0;di<7;di++){
+    const isWE=["Sat","Sun"].includes(DAYS[di]);
+    const q=isWE?weQ:wdQ;if(!q.length)continue;
+    for(let qi=0;qi<q.length;qi++){
+      const agId=q[qi];const ai=agentIdx[agId];
+      if(ai===undefined||alOnDay[ai][di])continue;
+      const gA=D.genderRules[agents[ai].gender]||[];
+      if(gA.length&&!gA.includes("C"))continue;
+      nightAssign[di]=agId;nightAssignAi[di]=ai;q.splice(qi,1);q.push(agId);break;
     }
   }
 
-  // ── Per-day distribution (AL-aware) ───────────────────────────────────────
-  const dayAvail=DAYS.map((_,di)=>agents.filter((_,ai)=>!alOnDay[ai][di]).length);
+  // Build target distribution per day
+  // KEY FIX: use ACTUAL AL count, keep configured work ratios, let OFF absorb remainder
+  const dayAvail=DAYS.map((_,di)=>{let c=0;for(let ai=0;ai<N;ai++)if(!alOnDay[ai][di])c++;return c});
   const dist=[];
-  const validDistKeys=new Set([...wk,'OFF','AL']);
-  for(let di=0;di<7;di++){
-    const day=DAYS[di];
-    const rawBase=D.dist[day]||{};
-    const base={};
-    for(const k of Object.keys(rawBase)){if(validDistKeys.has(k))base[k]=rawBase[k];}
-    const avail=dayAvail[di],alCount=N-avail;
-    const adjDist={};
-    adjDist.AL=alCount;
-    if(avail>0){
-      // Use configured distribution but scale proportionally to available agents
-      const configWork=Object.keys(base).filter(k=>wk.includes(k)).reduce((s,k)=>s+(base[k]||0),0);
-      const configOff=base.OFF||0;
-      const configTotal=configWork+configOff;
-      if(configTotal>0&&configTotal!==avail){
-        // Scale work shifts proportionally
-        const wkKeys=Object.keys(base).filter(k=>wk.includes(k));
-        let totalW=0;
-        for(const k of wkKeys){adjDist[k]=Math.max(0,Math.round((base[k]||0)*avail/configTotal));totalW+=adjDist[k];}
-        adjDist.OFF=Math.max(0,avail-totalW);
-      }else{
-        for(const k of Object.keys(base))adjDist[k]=base[k];
-        if(!adjDist.OFF)adjDist.OFF=configOff;
-      }
-      // Ensure total = N
-      const total=Object.keys(adjDist).reduce((s,v)=>s+(adjDist[v]||0),0);
-      const diff=N-total;
-      if(diff>0)adjDist.OFF=(adjDist.OFF||0)+diff;
-      else if(diff<0){
-        // Reduce OFF first, then largest work shift
-        let red=Math.abs(diff);
-        if(adjDist.OFF>=red){adjDist.OFF-=red;red=0;}
-        else{red-=adjDist.OFF;adjDist.OFF=0;
-          const wkKeys=Object.keys(adjDist).filter(k=>wk.includes(k)).sort((a,b)=>(adjDist[b]||0)-(adjDist[a]||0));
-          for(const k of wkKeys){if(red<=0)break;const take=Math.min(red,adjDist[k]);adjDist[k]-=take;red-=take;}
-        }
-      }
-    } else {
-      adjDist.AL=N;for(const k of wk)adjDist[k]=0;adjDist.OFF=0;
-    }
-    dist.push(adjDist);
-    console.log("[solve] Day",day,"avail=",avail,"alCount=",alCount,"adjDist=",JSON.stringify(adjDist));
-  }
-
-  // ── Validate ───────────────────────────────────────────────────────────────
+  const validK=new Set([...wk,'OFF','AL']);
   const errors=[];
+
   for(let di=0;di<7;di++){
-    const dd=dist[di];
-    const t=Object.keys(dd).reduce((s,k)=>s+(dd[k]||0),0);
-    if(Math.abs(t-N)>1){
-      errors.push(DAYS[di]+": dist total="+t+" but N="+N);
+    const day=DAYS[di];const raw=D.dist[day]||{};
+    const base={};for(const k of Object.keys(raw)){if(validK.has(k))base[k]=raw[k];}
+    const avail=dayAvail[di],alCnt=N-avail;
+    const adj={AL:alCnt};
+    if(avail>0){
+      // Copy work shift targets directly from config
+      const wkKeys=wk.filter(k=>k in base);
+      let workTotal=0;
+      for(const k of wkKeys){adj[k]=base[k]||0;workTotal+=adj[k];}
+      // If work + configured OFF > avail, scale work down
+      const configOff=base.OFF||0;
+      if(workTotal+configOff>avail){
+        // Scale work shifts proportionally to fit
+        const scale=Math.max(0,(avail-Math.min(configOff,avail))/Math.max(1,workTotal));
+        workTotal=0;
+        for(const k of wkKeys){adj[k]=Math.max(0,Math.round((base[k]||0)*scale));workTotal+=adj[k];}
+      }
+      // Ensure any work shifts not in base get 0
+      for(const k of wk){if(!(k in adj))adj[k]=0;}
+      // OFF = remainder
+      adj.OFF=Math.max(0,avail-workTotal);
+      // Fix total to N
+      const t=Object.values(adj).reduce((s,v)=>s+v,0);
+      if(t<N)adj.OFF+=N-t;
+      else if(t>N){let ex=t-N;if(adj.OFF>=ex){adj.OFF-=ex}else{ex-=adj.OFF;adj.OFF=0;for(const k of wkKeys.sort((a,b)=>(adj[b]||0)-(adj[a]||0))){if(ex<=0)break;const take=Math.min(ex,adj[k]);adj[k]-=take;ex-=take;}}}
+    }else{
+      for(const k of wk)adj[k]=0;adj.OFF=0;adj.AL=N;
     }
+    dist.push(adj);
   }
-  if(errors.length)return{ok:false,errors};
 
-  // ── Gender rules ──────────────────────────────────────────────────────────
+  // Validate dist totals
+  for(let di=0;di<7;di++){
+    const t=Object.values(dist[di]).reduce((s,v)=>s+v,0);
+    if(Math.abs(t-N)>0)errors.push(DAYS[di]+": dist="+t+" N="+N+" "+JSON.stringify(dist[di]));
+  }
+  if(errors.length){return{ok:false,errors};}
+
+  // Gender rules
   const gAllow=g=>{const r=D.genderRules[g]||[];return r.length?new Set(r.filter(x=>wk.includes(x))):new Set(wk)};
-  const gAllowAll=g=>{const s=gAllow(g);s.add("OFF");return s};
 
-  // ── RNG ───────────────────────────────────────────────────────────────────
+  // RNG
   let seed=randomize?Date.now():42;
   const rng=()=>{seed=(seed*16807)%2147483647;return(seed-1)/2147483646};
   const shuffle=a=>{const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b};
 
-  const countWork=(sch,ai)=>{let c=0;for(let di=0;di<7;di++)if(wk.includes(sch[ai][di]))c++;return c};
-  const countOff=(sch,ai)=>{let c=0;for(let di=0;di<7;di++)if(sch[ai][di]==="OFF")c++;return c};
-  const countShiftDay=(sch,di,sid)=>{let c=0;for(let ai=0;ai<N;ai++)if(sch[ai][di]===sid)c++;return c};
-
-  // ── Cross-week consecutive check ──────────────────────────────────────────
-  function _checkConsecutive(sch,ai){
-    // Max 5 consecutive work days including previous week trailing
-    let leading=prevTrailingWork[ai];
-    for(let di=0;di<7;di++){
-      if(wk.includes(sch[ai][di])){
-        leading++;
-        if(leading>5)return false;
-      }else{leading=0;}
-    }
-    return true;
-  }
-
-  // ── Hard constraints map ──────────────────────────────────────────────────
+  // Hard constraints
   const srMap=Array.from({length:N},()=>({}));
-  for(const hc of (D.hardConstraints||[])){
-    let ai=agentIdx[hc.agentId]??agentIdx[hc.aid];
-    if(ai===undefined&&hc.agentName)ai=nameIdx[hc.agentName.toLowerCase().trim()];
-    if(ai===undefined)continue;
-    if(hc.week&&hc.week!==ws)continue;
-    const days2=Array.isArray(hc.days)?hc.days:[hc.day].filter(Boolean);
-    days2.forEach(day=>{const di=DAYS.indexOf(day);if(di>=0&&!alOnDay[ai][di])srMap[ai][di]=hc.shift||hc.sid;});
-  }
-  for(const sr of (D.sr||[])){
-    let ai=agentIdx[sr.aid];if(ai===undefined)continue;
-    if(sr.week&&sr.week!==ws)continue;
-    const di=DAYS.indexOf(sr.day);
-    if(di>=0&&srMap[ai][di]===undefined&&!alOnDay[ai][di])srMap[ai][di]=sr.sid;
-  }
-  for(const p of (D.schedPrefs||[])){
-    if(p.status!=="Approved")continue;
-    let ai=agentIdx[p.aid];
-    if(ai===undefined){const ni2=agents.findIndex(a=>a.name===p.name);if(ni2>=0)ai=ni2}
-    if(ai===undefined)continue;
-    const di=DAYS.indexOf(p.day);
-    if(di>=0&&srMap[ai][di]===undefined&&!alOnDay[ai][di])srMap[ai][di]=p.request;
-  }
+  for(const hc of(D.hardConstraints||[])){let ai=agentIdx[hc.agentId]??agentIdx[hc.aid];if(ai===undefined&&hc.agentName)ai=nameIdx[hc.agentName.toLowerCase().trim()];if(ai===undefined)continue;if(hc.week&&hc.week!==ws)continue;const d2=Array.isArray(hc.days)?hc.days:[hc.day].filter(Boolean);d2.forEach(day=>{const di=DAYS.indexOf(day);if(di>=0&&!alOnDay[ai][di])srMap[ai][di]=hc.shift||hc.sid;});}
+  for(const sr of(D.sr||[])){let ai=agentIdx[sr.aid];if(ai===undefined)continue;if(sr.week&&sr.week!==ws)continue;const di=DAYS.indexOf(sr.day);if(di>=0&&srMap[ai][di]===undefined&&!alOnDay[ai][di])srMap[ai][di]=sr.sid;}
+  for(const p of(D.schedPrefs||[])){if(p.status!=="Approved")continue;let ai=agentIdx[p.aid];if(ai===undefined){const ni2=agents.findIndex(a=>a.name===p.name);if(ni2>=0)ai=ni2}if(ai===undefined)continue;const di=DAYS.indexOf(p.day);if(di>=0&&srMap[ai][di]===undefined&&!alOnDay[ai][di])srMap[ai][di]=p.request;}
 
-  // ── Compute target OFF per agent (fairness) ───────────────────────────────
-  const totalOffNeeded=DAYS.reduce((_,__,di)=>_+(dist[di].OFF||0),0);
-  const nonALAgentCount=agents.filter((_,ai)=>!DAYS.every((_2,di)=>alOnDay[ai][di])).length||1;
-  const targetOff=Math.round(totalOffNeeded/Math.max(1,nonALAgentCount));
-  const agentTargetOff=agents.map((_,ai)=>{
-    const avDays=DAYS.reduce((c,_2,di)=>c+(!alOnDay[ai][di]?1:0),0);
-    if(avDays===0)return 0;
-    return Math.min(maxOff,Math.max(1,targetOff));
+  // Helpers
+  const countWork=(sch,ai)=>{let c=0;for(let d=0;d<7;d++)if(wk.includes(sch[ai][d]))c++;return c};
+  const countOff=(sch,ai)=>{let c=0;for(let d=0;d<7;d++)if(sch[ai][d]==="OFF")c++;return c};
+  const countShift=(sch,di,sid)=>{let c=0;for(let a=0;a<N;a++)if(sch[a][di]===sid)c++;return c};
+
+  // Compute OFF targets
+  const totalOff=dist.reduce((s,d)=>s+(d.OFF||0),0);
+  const activeCount=agents.filter((_,ai)=>!DAYS.every((_2,di)=>alOnDay[ai][di])).length||1;
+  const avgOff=totalOff/activeCount;
+  const tgtOff=agents.map((_,ai)=>{
+    const avD=DAYS.reduce((c,_2,di)=>c+(!alOnDay[ai][di]?1:0),0);
+    if(avD===0)return 0;return Math.min(maxOff,Math.max(1,Math.round(avgOff)));
   });
+  const effMaxWork=Math.max(maxWork,Math.ceil((dist.reduce((s,d)=>s+wk.reduce((ss,k)=>ss+(d[k]||0),0),0))/activeCount));
 
-  const totalWorkNeeded=DAYS.reduce((_,__,di)=>_+wk.reduce((s,id)=>s+(dist[di][id]||0),0),0);
-  const effectiveMaxWork=Math.max(maxWork,Math.ceil(totalWorkNeeded/Math.max(1,nonALAgentCount)));
+  let bestSch=null,bestScore=-Infinity;
+  const MAX_ATT=8000;
 
-  // ── Main solver loop ──────────────────────────────────────────────────────
-  let bestSch=null,bestScore=-1,bestEstSch=null,bestEstScore=-Infinity;
-  const maxAttempts=5000;
-
-  for(let attempt=0;attempt<maxAttempts;attempt++){
-    seed=(randomize?Date.now():42)+attempt*7+attempt;
+  for(let att=0;att<MAX_ATT;att++){
+    seed=(randomize?Date.now():42)+att*7+att;
     const sch=Array.from({length:N},()=>Array(7).fill(null));
 
-    // Step 1: Place AL
+    // 1. Place AL
     for(let ai=0;ai<N;ai++)for(let di=0;di<7;di++)if(alOnDay[ai][di])sch[ai][di]="AL";
 
-    // Step 2: Place night shift C from rota
-    for(let di=0;di<7;di++){
-      const ai=nightAssignAi[di];
-      if(ai<0)continue;
-      if(alOnDay[ai][di])continue;
-      sch[ai][di]="C";
-    }
+    // 2. Place C from night rota
+    for(let di=0;di<7;di++){const ai=nightAssignAi[di];if(ai>=0&&!alOnDay[ai][di])sch[ai][di]="C";}
 
-    // Step 3: Hard constraints
-    for(let ai=0;ai<N;ai++){
-      for(const diStr in srMap[ai]){
-        const di=parseInt(diStr);
-        if(alOnDay[ai][di]||sch[ai][di]!==null)continue;
-        sch[ai][di]=srMap[ai][di];
+    // 3. Hard constraints
+    for(let ai=0;ai<N;ai++){for(const ds in srMap[ai]){const di=parseInt(ds);if(!alOnDay[ai][di]&&sch[ai][di]===null)sch[ai][di]=srMap[ai][di];}}
+
+    // 4. Place OFFs fairly
+    const offNeed=dist.map((d,di)=>{let h=0;for(let ai=0;ai<N;ai++)if(sch[ai][di]==="OFF")h++;return{di,need:d.OFF||0,have:h}});
+    const agOrd=shuffle(Array.from({length:N},(_,i)=>i).filter(ai=>!DAYS.every((_2,di)=>alOnDay[ai][di])));
+    for(const ai of agOrd){
+      let myOff=countOff(sch,ai);const tgt=tgtOff[ai];if(myOff>=tgt)continue;
+      const empty=[];for(let di=0;di<7;di++)if(sch[ai][di]===null)empty.push(di);
+      // Prefer days needing more OFFs
+      const sorted=shuffle(empty).sort((a,b)=>(offNeed[b].need-offNeed[b].have)-(offNeed[a].need-offNeed[a].have));
+      for(const di of sorted){
+        if(myOff>=tgt)break;
+        sch[ai][di]="OFF";offNeed[di].have++;myOff++;
       }
     }
 
-    // Step 4: Pre-counts
-    const agentPreFilled=Array(N).fill(0);
-    for(let ai=0;ai<N;ai++)for(let di=0;di<7;di++)if(sch[ai][di]!==null)agentPreFilled[ai]++;
-
-    // Step 5: OFF assignment — cross-week aware
-    const dayOffCounts=dist.map((d,di)=>{
-      let have=0;for(let ai=0;ai<N;ai++)if(sch[ai][di]==="OFF")have++;
-      return{di,need:d.OFF||0,have};
-    });
-
-    const agentOrder=shuffle(Array.from({length:N},(_,i)=>i)
-      .filter(ai=>!DAYS.every((_2,di)=>alOnDay[ai][di]))
-      .sort((a,b)=>(7-agentPreFilled[a])-(7-agentPreFilled[b])));
-
-    for(const ai of agentOrder){
-      const myOffs=countOff(sch,ai);
-      const tgt=agentTargetOff[ai];
-      const needed=tgt-myOffs;if(needed<=0)continue;
-      const emptySlots=[];
-      for(let di=0;di<7;di++)if(sch[ai][di]===null&&!alOnDay[ai][di])emptySlots.push(di);
-      if(emptySlots.length<needed)continue;
-      
-      // Cross-week: if agent had trailing work days from prev week, prefer early OFFs
-      const trailing=prevTrailingWork[ai];
-      if(trailing>=4&&emptySlots.includes(0)&&needed>0){
-        // Force Mon OFF to break consecutive streak
-        sch[ai][0]="OFF";dayOffCounts[0].have++;
-        const remaining=needed-1;
-        if(remaining>0){
-          const otherSlots=emptySlots.filter(di=>di!==0);
-          const sorted2=shuffle(otherSlots).sort((a,b)=>(dayOffCounts[b].need-dayOffCounts[b].have)-(dayOffCounts[a].need-dayOffCounts[a].have));
-          let cnt=0;for(const di of sorted2){if(cnt>=remaining)break;sch[ai][di]="OFF";dayOffCounts[di].have++;cnt++;}
-        }
-        continue;
-      }
-      
-      // Try consecutive pairs first
-      const offPairs=[];
-      for(let i=0;i<emptySlots.length-1;i++)
-        if(emptySlots[i+1]-emptySlots[i]===1)offPairs.push([emptySlots[i],emptySlots[i+1]]);
-      let placed=false;
-      if(needed===2&&myOffs===0){
-        const sp=shuffle(offPairs);
-        for(const[d1,d2]of sp){
-          if(dayOffCounts[d1].have<dayOffCounts[d1].need&&dayOffCounts[d2].have<dayOffCounts[d2].need){
-            sch[ai][d1]="OFF";sch[ai][d2]="OFF";dayOffCounts[d1].have++;dayOffCounts[d2].have++;placed=true;break;
-          }
-        }
-        if(!placed)for(const[d1,d2]of sp){
-          if(dayOffCounts[d1].have<dayOffCounts[d1].need||dayOffCounts[d2].have<dayOffCounts[d2].need){
-            sch[ai][d1]="OFF";sch[ai][d2]="OFF";dayOffCounts[d1].have++;dayOffCounts[d2].have++;placed=true;break;
-          }
-        }
-        if(!placed&&sp.length>0){const[d1,d2]=sp[0];sch[ai][d1]="OFF";sch[ai][d2]="OFF";dayOffCounts[d1].have++;dayOffCounts[d2].have++;placed=true;}
-      }
-      if(!placed){
-        const sortedEmpty=shuffle([...emptySlots]).sort((a,b)=>(dayOffCounts[b].need-dayOffCounts[b].have)-(dayOffCounts[a].need-dayOffCounts[a].have));
-        let cnt=myOffs;
-        for(const di of sortedEmpty){if(cnt>=tgt)break;sch[ai][di]="OFF";dayOffCounts[di].have++;cnt++;}
-      }
-    }
-
-    // Step 6: Repair OFF distribution
-    for(let fixIter=0;fixIter<200;fixIter++){
-      let offOk=true;
+    // 5. Fix OFF over/under per day
+    for(let rep=0;rep<100;rep++){
+      let ok=true;
       for(let di=0;di<7;di++){
-        const need=dist[di].OFF||0;const have=countShiftDay(sch,di,"OFF");
+        const need=dist[di].OFF||0;const have=countShift(sch,di,"OFF");
         if(have>need){
-          offOk=false;
-          const cands=[];
-          for(let ai=0;ai<N;ai++){
-            if(alOnDay[ai][di]||sch[ai][di]!=="OFF"||srMap[ai][di]!==undefined)continue;
-            cands.push(ai);
-          }
-          const sc2=shuffle(cands);let fixed=false;
-          for(const ai of sc2){
-            if(fixed)break;
-            for(let dj=0;dj<7;dj++){
-              if(dj===di||sch[ai][dj]===null||sch[ai][dj]==="OFF"||sch[ai][dj]==="AL"||srMap[ai][dj]!==undefined)continue;
-              const djNeed=dist[dj].OFF||0;const djHave=countShiftDay(sch,dj,"OFF");
-              if(djHave>=djNeed)continue;
-              sch[ai][di]=null;sch[ai][dj]="OFF";dayOffCounts[di].have--;dayOffCounts[dj].have++;fixed=true;break;
-            }
-          }
-          if(!fixed&&sc2.length>0){
-            const ai=sc2[0];sch[ai][di]=null;dayOffCounts[di].have--;
-            for(let dj=0;dj<7;dj++){
-              if(sch[ai][dj]!==null)continue;
-              if((dist[dj].OFF||0)>countShiftDay(sch,dj,"OFF")){sch[ai][dj]="OFF";dayOffCounts[dj].have++;break}
-            }
-          }
+          ok=false;
+          // Remove an OFF from someone who has too many
+          for(let ai=0;ai<N;ai++){if(sch[ai][di]==="OFF"&&srMap[ai][di]===undefined&&countOff(sch,ai)>1){sch[ai][di]=null;break;}}
+        }else if(have<need){
+          ok=false;
+          // Add OFF to someone with null slot and most work
+          const cands=shuffle(Array.from({length:N},(_,i)=>i).filter(ai=>sch[ai][di]===null));
+          if(cands.length)sch[cands[0]][di]="OFF";
         }
       }
-      if(offOk)break;
+      if(ok)break;
     }
 
-    // Step 7: Fill nulls with work shifts
+    // 6. Fill remaining nulls with work shifts
     for(let di=0;di<7;di++){
-      const dayCounts={};for(const s of all)dayCounts[s]=0;
-      for(let ai=0;ai<N;ai++)if(sch[ai][di]!==null)dayCounts[sch[ai][di]]=(dayCounts[sch[ai][di]]||0)+1;
-      const unfilled=[];for(let ai=0;ai<N;ai++)if(!alOnDay[ai][di]&&sch[ai][di]===null)unfilled.push(ai);
+      const counts={};for(const s of all){counts[s]=0;}for(let ai=0;ai<N;ai++)if(sch[ai][di]!==null)counts[sch[ai][di]]++;
+      const nulls=[];for(let ai=0;ai<N;ai++)if(sch[ai][di]===null)nulls.push(ai);
+      // Build needs list
       const needs=[];
-      for(const s of wk){const need=(dist[di][s]||0)-(dayCounts[s]||0);for(let j=0;j<Math.max(0,need);j++)needs.push(s)}
-      const offNeed=Math.max(0,(dist[di].OFF||0)-(dayCounts.OFF||0));
-      for(let j=0;j<offNeed;j++)needs.push("OFF");
-      const sortedUnfilled=shuffle(unfilled).sort((a,b)=>gAllow(agents[a].gender).size-gAllow(agents[b].gender).size);
-      const needsAvail=[...needs];
-      for(const ai of sortedUnfilled){
-        if(!needsAvail.length){sch[ai][di]=[...gAllow(agents[ai].gender)][0]||"A";continue;}
-        const allowed=gAllowAll(agents[ai].gender);
-        const curWork=countWork(sch,ai),curOff=countOff(sch,ai);
-        let bestIdx=-1;
-        for(let j=0;j<needsAvail.length;j++){
-          const s=needsAvail[j];
-          if(s==="OFF"){if(curOff>=maxOff)continue;bestIdx=j;break;}
+      for(const s of wk){const n=Math.max(0,(dist[di][s]||0)-counts[s]);for(let j=0;j<n;j++)needs.push(s);}
+      const offN=Math.max(0,(dist[di].OFF||0)-counts.OFF);
+      for(let j=0;j<offN;j++)needs.push("OFF");
+      // If needs < nulls, add more of whatever shift
+      while(needs.length<nulls.length){
+        // Find the shift with biggest deficit
+        let bestS="A",bestD=-999;
+        for(const s of wk){const deficit=(dist[di][s]||0)-(counts[s]||0)-needs.filter(x=>x===s).length;if(deficit>bestD){bestD=deficit;bestS=s;}}
+        needs.push(bestS);
+      }
+      // Sort nulls: most constrained (fewer allowed shifts) first
+      const sortedN=shuffle(nulls).sort((a,b)=>gAllow(agents[a].gender).size-gAllow(agents[b].gender).size);
+      const avail=[...needs];
+      for(const ai of sortedN){
+        const allowed=gAllow(agents[ai].gender);
+        // Find best match
+        let pick=-1;
+        for(let j=0;j<avail.length;j++){
+          const s=avail[j];
+          if(s==="OFF"){if(countOff(sch,ai)<maxOff+1){pick=j;break;}continue;}
           if(!allowed.has(s))continue;
-          if(curWork>=effectiveMaxWork)continue;
-          const old=sch[ai][di];sch[ai][di]=s;
-          const rok=_checkRest(sch,ai,wk);sch[ai][di]=old;
-          if(!rok)continue;
-          bestIdx=j;break;
+          if(countWork(sch,ai)>=effMaxWork+1)continue;
+          pick=j;break;
         }
-        if(bestIdx===-1){
-          for(let j=0;j<needsAvail.length;j++){
-            const s=needsAvail[j];
-            if(s==="OFF"&&curOff<maxOff+1){bestIdx=j;break}
-            if(allowed.has(s)){bestIdx=j;break}
+        if(pick===-1){
+          // Fallback: take anything allowed
+          for(let j=0;j<avail.length;j++){
+            if(avail[j]==="OFF"||allowed.has(avail[j])){pick=j;break;}
           }
         }
-        if(bestIdx>=0){sch[ai][di]=needsAvail[bestIdx];needsAvail.splice(bestIdx,1);}
-        else{if(curWork<effectiveMaxWork)sch[ai][di]=[...gAllow(agents[ai].gender)][0]||"A";else sch[ai][di]="OFF";}
+        if(pick>=0){sch[ai][di]=avail[pick];avail.splice(pick,1);}
+        else{sch[ai][di]=[...allowed][0]||"A";}
       }
     }
 
-    // Step 8: Repair distribution
-    for(let iter=0;iter<500;iter++){
+    // 7. Repair: swap to fix distribution mismatches
+    for(let rep=0;rep<300;rep++){
       let allOk=true;
       for(let di=0;di<7;di++){
-        const dd=dist[di],counts={};
-        for(let ai=0;ai<N;ai++)counts[sch[ai][di]]=(counts[sch[ai][di]]||0)+1;
+        const counts={};for(let ai=0;ai<N;ai++)counts[sch[ai][di]]=(counts[sch[ai][di]]||0)+1;
         for(const sOver of all){
-          const excess=(counts[sOver]||0)-(dd[sOver]||0);if(excess<=0)continue;allOk=false;
+          const ex=(counts[sOver]||0)-(dist[di][sOver]||0);if(ex<=0)continue;allOk=false;
           for(const sUnder of all){
-            const deficit=(dd[sUnder]||0)-(counts[sUnder]||0);if(deficit<=0)continue;
-            const cands=[];
+            const def=(dist[di][sUnder]||0)-(counts[sUnder]||0);if(def<=0)continue;
+            // Find agent to swap
             for(let ai=0;ai<N;ai++){
-              if(alOnDay[ai][di]||sch[ai][di]!==sOver||srMap[ai][di]!==undefined)continue;
+              if(sch[ai][di]!==sOver||srMap[ai][di]!==undefined||alOnDay[ai][di])continue;
               if(sUnder!=="OFF"&&sUnder!=="AL"&&!gAllow(agents[ai].gender).has(sUnder))continue;
-              if(sUnder==="OFF"&&countOff(sch,ai)>=maxOff+1)continue;
-              if(sOver==="OFF"&&countOff(sch,ai)<=0)continue;
-              if(wk.includes(sUnder)&&countWork(sch,ai)>=effectiveMaxWork)continue;
-              if(wk.includes(sOver)&&countWork(sch,ai)<=0)continue;
-              const old=sch[ai][di];sch[ai][di]=sUnder;
-              const rok=_checkRest(sch,ai,wk);sch[ai][di]=old;
-              if(!rok)continue;cands.push(ai);
+              sch[ai][di]=sUnder;counts[sOver]--;counts[sUnder]=(counts[sUnder]||0)+1;break;
             }
-            const sc2=shuffle(cands);let sw=0;
-            for(const ai of sc2){
-              if(sw>=Math.min(excess,deficit))break;
-              sch[ai][di]=sUnder;counts[sOver]--;counts[sUnder]=(counts[sUnder]||0)+1;sw++;
-            }
-            if(sw>0)break;
+            break;
           }
         }
       }
       if(allOk)break;
     }
 
-    // Step 9: Validate — RELAXED (allow ±1 tolerance per shift per day)
-    let valid=true;let distDeviation=0;
-    for(let di=0;di<7&&valid;di++){
+    // 8. Score (no strict validation — score-based selection)
+    let score=0;let distDev=0;
+    for(let di=0;di<7;di++){
       const counts={};for(let ai=0;ai<N;ai++)counts[sch[ai][di]]=(counts[sch[ai][di]]||0)+1;
-      const dd=dist[di];
-      for(const s of all){
-        const diff=Math.abs((counts[s]||0)-(dd[s]||0));
-        distDeviation+=diff;
-        if(diff>1){valid=false;break;}
-      }
+      for(const s of all)distDev+=Math.abs((counts[s]||0)-(dist[di][s]||0));
     }
-    for(let ai=0;ai<N&&valid;ai++){
-      const w=countWork(sch,ai),o=countOff(sch,ai);
-      if(w>effectiveMaxWork+1||o>maxOff+2){valid=false;break;}
-      if(!_checkRest(sch,ai,wk)){valid=false;break;}
-      if(!_checkConsecutive(sch,ai)){valid=false;break;}
-    }
-    if(!valid)continue;
-
-    // Score: prefer exact distribution match, fairness, consecutive OFFs
-    let score=1000-distDeviation*50;
+    score-=distDev*100; // Heavy penalty for dist mismatch
+    // Rest and work limit checks
+    let restFail=0,workFail=0;
     for(let ai=0;ai<N;ai++){
-      const o=countOff(sch,ai),tgt2=agentTargetOff[ai];
-      score+=o===tgt2?12:o===tgt2-1||o===tgt2+1?6:2;
+      if(!_checkRest(sch,ai,wk))restFail++;
+      const w=countWork(sch,ai);if(w>effMaxWork+1)workFail++;
+      const o=countOff(sch,ai);
+      score+=o===tgtOff[ai]?10:o>=1?5:0;
+      // Consecutive OFF bonus
       const offs=[];for(let di=0;di<7;di++)if(sch[ai][di]==="OFF")offs.push(di);
-      if(offs.length>=2){let consec=false;for(let i=0;i<offs.length-1;i++)if(offs[i+1]-offs[i]===1)consec=true;if(consec)score+=3;}
-      const ws2=new Set();for(let di=0;di<7;di++){const s=sch[ai][di];if(wk.includes(s))ws2.add(s);}
-      if(ws2.size<=1)score+=2;
+      for(let i=0;i<offs.length-1;i++)if(offs[i+1]-offs[i]===1)score+=3;
     }
-    if(distDeviation===0)score+=500; // Perfect distribution bonus
-    if(score>bestEstScore){bestEstScore=score;bestEstSch=sch.map(r=>[...r]);}
-    if(distDeviation===0&&score>bestScore){bestScore=score;bestSch=sch.map(r=>[...r]);}
-    if(bestScore>=N*17+500)break;
+    score-=restFail*200;score-=workFail*150;
+    if(distDev===0)score+=2000;
+
+    if(score>bestScore){bestScore=score;bestSch=sch.map(r=>[...r]);}
+    if(distDev===0&&restFail===0&&workFail===0)break; // Perfect
   }
 
-  if(bestSch)return{ok:true,schedule:bestSch,warnings:pendingWarnings.length?["⚠ "+pendingWarnings.length+" pending leave request(s) overlap this week (not applied to schedule)."].concat(pendingWarnings.slice(0,3)):[]};
-  if(bestEstSch)return{ok:true,schedule:bestEstSch,warnings:["⚠ Schedule generated with minor distribution adjustments. Review carefully."].concat(pendingWarnings.slice(0,3))};
-
+  if(bestSch){
+    // Compute final stats for warnings
+    let distDev=0;
+    for(let di=0;di<7;di++){const counts={};for(let ai=0;ai<N;ai++)counts[bestSch[ai][di]]=(counts[bestSch[ai][di]]||0)+1;for(const s of all)distDev+=Math.abs((counts[s]||0)-(dist[di][s]||0));}
+    const warns=distDev>0?["⚠ Schedule has minor distribution adjustments (±"+distDev+" total). Review carefully."]:[];
+    if(pendingWarnings.length)warns.push("⚠ "+pendingWarnings.length+" pending leave(s) not applied.");
+    return{ok:true,schedule:bestSch,warnings:warns};
+  }
+  // Diagnostics
   const diag=[];
-  for(let di=0;di<7;di++){
-    const avail=dayAvail[di];const dd=dist[di];
-    const wkNeed=wk.reduce((s,k)=>s+(dd[k]||0),0);
-    if(wkNeed>avail)diag.push(DAYS[di]+": need "+wkNeed+" work but only "+avail+" available");
-  }
-  diag.push("Agents: "+N+", Max OFF: "+maxOff+", Max Work: "+maxWork);
-  errors.push("Could not generate schedule.\n"+diag.join("\n"));
-  return{ok:false,errors};
+  for(let di=0;di<7;di++){const av=dayAvail[di];const wkN=wk.reduce((s,k)=>s+(dist[di][k]||0),0);if(wkN>av)diag.push(DAYS[di]+": need "+wkN+" work, only "+av+" available");}
+  diag.push("Agents:"+N+" MaxOFF:"+maxOff+" MaxWork:"+maxWork);
+  return{ok:false,errors:["Could not generate schedule.\n"+diag.join("\n")]};
 }
 
 // ══════════════════════════════════════════════════════
@@ -1992,33 +1705,6 @@ function renderGR(){const area=document.getElementById("grArea"),wk=workIds();le
 function tgGR(g,sid,on){if(!D.genderRules[g])D.genderRules[g]=[];if(on){if(!D.genderRules[g].includes(sid))D.genderRules[g].push(sid)}else D.genderRules[g]=D.genderRules[g].filter(x=>x!==sid);renderGR();renderGR2();save()}
 function renderGR2(){const area=document.getElementById("grArea2");if(!area)return;const wk=workIds();let h='<p style="font-size:11.5px;color:var(--tx2);margin-bottom:10px">Check which shifts each gender <b>can</b> work. None = all.</p>';["F","M"].forEach(g=>{const al=D.genderRules[g]||[];h+=`<div class="fr" style="margin-bottom:8px"><label style="width:70px;font-weight:600">${g==="F"?"Female":"Male"}</label>`;wk.forEach(sid=>{h+=`<label style="display:inline-flex;align-items:center;gap:3px;cursor:pointer;font-size:12px"><input type="checkbox" ${al.includes(sid)?"checked":""} onchange="tgGR('${g}','${sid}',this.checked)"> ${sid}</label>`});if(!al.length)h+='<span style="font-size:10.5px;color:var(--grn);margin-left:6px">All</span>';h+="</div>"});area.innerHTML=h}
 function saveRules(){D.rules.max_off=parseInt(document.getElementById("rMO").value);D.rules.max_work=parseInt(document.getElementById("rMW").value);saveAndSync();toast("Saved")}
-// ─── Office/WFH Rules ─────────────────────────────────
-function toggleOfficeRules(on){
-  if(!D.officeRules)D.officeRules={enabled:false,earlyMaleMustOffice:true,msMustOffice:true,bMinOffice:2,fairRotation:true};
-  D.officeRules.enabled=on;
-  const body=document.getElementById("officeRulesBody");
-  if(body)body.style.display=on?"block":"none";
-  saveAndSync();
-}
-function saveOfficeRules(){
-  if(!D.officeRules)D.officeRules={};
-  D.officeRules.enabled=document.getElementById("officeEnabled")?.checked||false;
-  D.officeRules.earlyMaleMustOffice=document.getElementById("officeEarlyMale")?.checked||false;
-  D.officeRules.msMustOffice=document.getElementById("officeMSMust")?.checked||false;
-  D.officeRules.bMinOffice=parseInt(document.getElementById("officeBMin")?.value)||2;
-  D.officeRules.fairRotation=document.getElementById("officeFairRotation")?.checked||false;
-  saveAndSync();toast("Office rules saved");
-}
-function loadOfficeRules(){
-  if(!D.officeRules)return;
-  const r=D.officeRules;
-  const en=document.getElementById("officeEnabled");if(en)en.checked=r.enabled||false;
-  const body=document.getElementById("officeRulesBody");if(body)body.style.display=r.enabled?"block":"none";
-  const em=document.getElementById("officeEarlyMale");if(em)em.checked=r.earlyMaleMustOffice!==false;
-  const ms=document.getElementById("officeMSMust");if(ms)ms.checked=r.msMustOffice!==false;
-  const bm=document.getElementById("officeBMin");if(bm)bm.value=r.bMinOffice||2;
-  const fr=document.getElementById("officeFairRotation");if(fr)fr.checked=r.fairRotation!==false;
-}
 function alDays(start,end){const s=new Date(start+"T00:00:00"),e=new Date(end+"T00:00:00");if(e<s)return 0;return Math.round((e-s)/86400000)+1}
 function alStatusColor(st){return{Pending:"#f59e0b",Approved:"#10b981",Completed:"#6b7280",Ongoing:"#3b82f6",Rejected:"#ef4444"}[st]||"#586380"}
 function alYear(d,rec){if(rec&&rec.yearTag)return rec.yearTag;return new Date(d+"T00:00:00").getFullYear()}
@@ -2027,8 +1713,7 @@ let AL_YEAR=2026;
 function setALYear(y){AL_YEAR=y;document.querySelectorAll(".alYearBtn").forEach(b=>{b.className="btn bsm alYearBtn "+(b.dataset.y==String(y)?"bp":"bs2")});renderAL()}
 function alFiltered(){if(AL_YEAR==="all")return D.al;return D.al.filter(a=>alYear(a.start,a)===AL_YEAR||alYear(a.end,a)===AL_YEAR)}
 function alOverlap(start,end,excludeId){
-  // Per-day accurate overlap: count how many OTHER active leaves overlap on EACH day
-  // Returns list of unique other-agent leaves that overlap any day in [start,end]
+  // Returns list of OTHER active leaves that share ANY day with [start,end]
   const s=new Date(start+"T00:00:00"),e=new Date(end+"T00:00:00");
   return D.al.filter(a=>{
     if(a.id===excludeId)return false;
@@ -2037,6 +1722,29 @@ function alOverlap(start,end,excludeId){
     const as2=new Date(a.start+"T00:00:00"),ae=new Date(a.end+"T00:00:00");
     return as2<=e&&ae>=s;
   });
+}
+// NEW: Returns {maxCount, violatingDates:["YYYY-MM-DD",...], namesByDate:{date:[names]}}
+function alDayByDayOverlap(start,end,excludeId){
+  const s=new Date(start+"T00:00:00"),e=new Date(end+"T00:00:00");
+  const maxConc=D.alRules?.maxConcurrent||2;
+  let maxCount=0;const violatingDates=[];const namesByDate={};
+  const cur=new Date(s);
+  while(cur<=e){
+    const ds=cur.toISOString().split("T")[0];
+    const dc=new Date(ds+"T00:00:00");
+    const onLeave=[];
+    D.al.forEach(a=>{
+      if(a.id===excludeId)return;
+      const st=a.status||"Approved";
+      if(st==="Rejected"||st==="Completed")return;
+      const as2=new Date(a.start+"T00:00:00"),ae=new Date(a.end+"T00:00:00");
+      if(dc>=as2&&dc<=ae)onLeave.push(a.name.split(" ")[0]);
+    });
+    if(onLeave.length>maxCount)maxCount=onLeave.length;
+    if(onLeave.length>=maxConc){violatingDates.push(ds);namesByDate[ds]=onLeave;}
+    cur.setDate(cur.getDate()+1);
+  }
+  return{maxCount,violatingDates,namesByDate};
 }
 function alMaxDayOverlap(start,end,excludeId){
   // Returns the MAXIMUM number of OTHER active leave records overlapping on any single day
@@ -2064,13 +1772,13 @@ function alValidateRequest(aid,start,end,excludeId){
   const errs=[],warns=[];
   const days=alDays(start,end);
   const maxConc=D.alRules?.maxConcurrent||2;
-  // Per-day accurate overlap — only block if ACTUAL daily overlap exceeds max
-  const maxDayOver=alMaxDayOverlap(start,end,excludeId);
-  const overlap=alOverlap(start,end,excludeId);
-  if(maxDayOver>=maxConc){
-    errs.push("❌ BLOCKED: "+maxDayOver+" agents already on leave on at least one day (max "+maxConc+"). Overlapping: "+overlap.map(a=>a.name).join(", "));
-  } else if(overlap.length>0){
-    warns.push("⚠ Overlaps with "+overlap.length+" other leaves (max daily: "+maxDayOver+", limit: "+maxConc+") — within limits");
+  const dbd=alDayByDayOverlap(start,end,excludeId);
+  if(dbd.violatingDates.length>0){
+    const sample=dbd.violatingDates.slice(0,3).join(", ")+(dbd.violatingDates.length>3?" + "+(dbd.violatingDates.length-3)+" more":"");
+    const names=[...new Set(dbd.violatingDates.flatMap(d=>dbd.namesByDate[d]||[]))].join(", ");
+    errs.push("❌ BLOCKED: "+dbd.maxCount+" agents on leave on: "+sample+". ("+names+", max "+maxConc+")");
+  }else if(dbd.maxCount>0){
+    warns.push("⚠ Max "+dbd.maxCount+" overlap on same day (limit "+maxConc+") — within limits");
   }
   const today=new Date();const startD=new Date(start+"T00:00:00");
   const notice=Math.round((startD-today)/86400000);
@@ -2086,7 +1794,7 @@ function alValidateRequest(aid,start,end,excludeId){
 function saveALRules(){D.alRules={totalDays:parseInt(document.getElementById("alrTotal").value)||30,noticeDays:parseInt(document.getElementById("alrNotice").value)||14,maxConcurrent:parseInt(document.getElementById("alrMaxConc").value)||2,minCoverage:parseInt(document.getElementById("alrMinCoverage").value)||10,notifyDays:parseInt(document.getElementById("alrNotifyDays").value)||7,blackoutDates:(document.getElementById("alrBlackout").value||"").trim()};saveAndSync();toast("Rules saved")}
 function loadALRules(){if(!D.alRules)return;const r=D.alRules;const g=id=>document.getElementById(id);if(g("alrTotal"))g("alrTotal").value=r.totalDays||30;if(g("alrNotice"))g("alrNotice").value=r.noticeDays||14;if(g("alrMaxConc"))g("alrMaxConc").value=r.maxConcurrent||2;if(g("alrMinCoverage"))g("alrMinCoverage").value=r.minCoverage||10;if(g("alrNotifyDays"))g("alrNotifyDays").value=r.notifyDays||7;if(g("alrBlackout"))g("alrBlackout").value=r.blackoutDates||""}
 function alPreview(){const s=document.getElementById("alS").value,e=document.getElementById("alE").value,aid=document.getElementById("alA").value,el=document.getElementById("alPreview");if(!el||!s||!e){if(el)el.innerHTML="";return}const v=alValidateRequest(aid,s,e);el.innerHTML='<div style="font-size:12px"><span style="font-family:var(--mono);font-weight:700;color:var(--cyn)">'+v.days+' days</span>'+(v.errs.length?'<div style="margin-top:4px">'+v.errs.map(w=>'<div style="color:var(--red);font-size:11px;font-weight:600">'+w+'</div>').join("")+"</div>":"")+(v.warns.length?'<div style="margin-top:2px">'+v.warns.map(w=>'<div style="color:var(--orn);font-size:11px">'+w+'</div>').join("")+"</div>":"")+(!v.errs.length&&!v.warns.length?'<span style="color:var(--grn);margin-left:8px">✓ No issues</span>':"")+"</div>"}
-function renderAL(){const el=document.getElementById("alL");const filtered=alFiltered();document.getElementById("alCount").textContent=filtered.length;if(!filtered.length){el.innerHTML='<div class="emp">No leave records'+(AL_YEAR!=="all"?" for "+AL_YEAR:"")+'.</div>';renderALBalance();renderALNotify();renderALPending();renderALCalendar();return}const sorted=[...filtered].sort((a,b)=>new Date(a.start)-new Date(b.start));el.innerHTML=sorted.map(a=>{const days=alDays(a.start,a.end);const st=a.status||"Approved";const ol=alOverlap(a.start,a.end,a.id);const maxConc=D.alRules?.maxConcurrent||2;const olNames=ol.map(x=>x.name.split(" ")[0]);const olWarn=ol.length>=maxConc?' <span style="color:var(--red);font-size:10px;font-weight:700;cursor:help" title="Overlaps with: '+ol.map(x=>x.name).join(", ")+'">⚠ OVER('+ol.length+') 👥 '+olNames.join(", ")+'</span>':ol.length>0?' <span style="color:var(--orn);font-size:10px;cursor:help" title="Overlaps with: '+ol.map(x=>x.name).join(", ")+'">👥 '+ol.length+' (OK ≤'+maxConc+')</span>':"";return'<div class="ir" style="border-left:4px solid '+alStatusColor(st)+'"><span class="tg" style="background:'+alStatusColor(st)+'20;color:'+alStatusColor(st)+'">'+st+'</span><b style="min-width:180px">'+a.name+'</b><span style="font-family:var(--mono);font-size:11px;color:var(--tx2)">'+a.start+' → '+a.end+'</span><span style="font-family:var(--mono);font-weight:700;color:var(--cyn);min-width:50px">'+days+'d</span>'+olWarn+'<select onchange="chALStatus(\''+a.id+'\',this.value)" style="width:90px;font-size:10px;padding:3px"><option '+(st==="Pending"?"selected":"")+'>Pending</option><option '+(st==="Approved"?"selected":"")+'>Approved</option><option '+(st==="Ongoing"?"selected":"")+'>Ongoing</option><option '+(st==="Completed"?"selected":"")+'>Completed</option><option '+(st==="Rejected"?"selected":"")+'>Rejected</option></select>'+(a.adminNote?'<span style="font-size:10px;color:var(--tx3)" title="'+a.adminNote+'">💬</span>':'')+(a.yearTag&&a.yearTag!==new Date(a.start+"T00:00:00").getFullYear()?'<span style="font-size:9px;background:#4c1d95;color:#c4b5fd;padding:1px 5px;border-radius:3px">→'+a.yearTag+'</span>':'')+'<button class="btn bs2 bsm bic" onclick="editALDates(\''+a.id+'\')" title="Edit dates">✏</button><button class="btn bs2 bsm bic" onclick="editALYear(\''+a.id+'\')" title="Assign year">📅</button><button class="btn bs2 bsm bic" onclick="addALNote(\''+a.id+'\')" title="Add note">💬</button><button class="btn bd bsm bic" onclick="delAL(\''+a.id+'\')">✕</button></div>'}).join("");renderALBalance();renderALNotify();renderALPending();renderALLinks();loadALRules();renderALCalendar()}
+function renderAL(){const el=document.getElementById("alL");const filtered=alFiltered();document.getElementById("alCount").textContent=filtered.length;if(!filtered.length){el.innerHTML='<div class="emp">No leave records'+(AL_YEAR!=="all"?" for "+AL_YEAR:"")+'.</div>';renderALBalance();renderALNotify();renderALPending();renderALCalendar();return}const sorted=[...filtered].sort((a,b)=>new Date(a.start)-new Date(b.start));el.innerHTML=sorted.map(a=>{const days=alDays(a.start,a.end);const st=a.status||"Approved";const ol=alOverlap(a.start,a.end,a.id);const maxConc=D.alRules?.maxConcurrent||2;const dbd=alDayByDayOverlap(a.start,a.end,a.id);const olWarn=dbd.violatingDates.length>0?' <span style="color:var(--red);font-size:10px;font-weight:700;cursor:help" title="Over limit on: '+dbd.violatingDates.slice(0,5).join(", ")+'">⚠ OVER('+dbd.maxCount+') on '+dbd.violatingDates.length+' day'+(dbd.violatingDates.length>1?"s":"")+'</span>':dbd.maxCount>0?' <span style="color:var(--orn);font-size:10px;cursor:help" title="Max '+dbd.maxCount+' overlap, within '+maxConc+' limit">👥 '+dbd.maxCount+'(OK ≤'+maxConc+')</span>':"";return'<div class="ir" style="border-left:4px solid '+alStatusColor(st)+'"><span class="tg" style="background:'+alStatusColor(st)+'20;color:'+alStatusColor(st)+'">'+st+'</span><b style="min-width:180px">'+a.name+'</b><span style="font-family:var(--mono);font-size:11px;color:var(--tx2)">'+a.start+' → '+a.end+'</span><span style="font-family:var(--mono);font-weight:700;color:var(--cyn);min-width:50px">'+days+'d</span>'+olWarn+'<select onchange="chALStatus(\''+a.id+'\',this.value)" style="width:90px;font-size:10px;padding:3px"><option '+(st==="Pending"?"selected":"")+'>Pending</option><option '+(st==="Approved"?"selected":"")+'>Approved</option><option '+(st==="Ongoing"?"selected":"")+'>Ongoing</option><option '+(st==="Completed"?"selected":"")+'>Completed</option><option '+(st==="Rejected"?"selected":"")+'>Rejected</option></select>'+(a.adminNote?'<span style="font-size:10px;color:var(--tx3)" title="'+a.adminNote+'">💬</span>':'')+(a.yearTag&&a.yearTag!==new Date(a.start+"T00:00:00").getFullYear()?'<span style="font-size:9px;background:#4c1d95;color:#c4b5fd;padding:1px 5px;border-radius:3px">→'+a.yearTag+'</span>':'')+'<button class="btn bs2 bsm bic" onclick="editALDates(\''+a.id+'\')" title="Edit dates">✏</button><button class="btn bs2 bsm bic" onclick="editALYear(\''+a.id+'\')" title="Assign year">📅</button><button class="btn bs2 bsm bic" onclick="addALNote(\''+a.id+'\')" title="Add note">💬</button><button class="btn bd bsm bic" onclick="delAL(\''+a.id+'\')">✕</button></div>'}).join("");renderALBalance();renderALNotify();renderALPending();renderALLinks();loadALRules();renderALCalendar()}
 function chALStatus(id,st){
   const a=D.al.find(x=>x.id===id);
   if(!a)return;
@@ -2172,7 +1880,7 @@ async function autoCloudSync(){
       attendance_json:D.attendance||{},
       roster_json:D.roster||null,
       breaks_json:BK.results||null,
-      settings_json:{shifts:D.shifts,rules:D.rules,genderRules:D.genderRules,breakPattern:BK.breakPattern,breakPatternC:BK.breakPatternC,peakWindows:BK.peakWindows,alRules:D.alRules||{},swapRequests:D.swapRequests||[],schedPrefs:D.schedPrefs||[],kpis:D.kpis||{},coaching:D.coaching||[],incidents:D.incidents||[],kb:D.kb||[],officeRules:D.officeRules||{}}
+      settings_json:{shifts:D.shifts,rules:D.rules,genderRules:D.genderRules,breakPattern:BK.breakPattern,breakPatternC:BK.breakPatternC,peakWindows:BK.peakWindows,alRules:D.alRules||{},swapRequests:D.swapRequests||[],schedPrefs:D.schedPrefs||[],kpis:D.kpis||{},coaching:D.coaching||[],incidents:D.incidents||[],kb:D.kb||[]}
     }).eq("id",SB_WEEK_ID);
     _clearALDirty();if(ind){ind.textContent="✓ Saved";setTimeout(()=>{if(ind)ind.style.display="none"},2000);}
     updatePendingBadges();
@@ -2496,12 +2204,7 @@ function doGen(){const btn=document.getElementById("btnG");btn.innerHTML='<span 
               // Auto-generate breaks
               setTimeout(()=>{BK.results={};DAYS.forEach(d=>{const agents2=D.roster.filter(r2=>r2.shifts[d]&&!NW2.has(r2.shifts[d])).map(r2=>({name:r2.name,code:r2.shifts[d]}));const off=D.roster.filter(r2=>NW2.has(r2.shifts[d])).map(r2=>[r2.name,r2.shifts[d]]);const br=bkSolveDay(d,agents2);BK.results[d]={assignments:br.ok?br.assignments:[],error:br.ok?null:br.error,offAgents:off,validation:br.validation||{}}});D.breakResults=BK.results;D.breakPattern=BK.breakPattern;D.breakPatternC=BK.breakPatternC;D.peakWindows=BK.peakWindows;saveAndSync();toast(`Schedule + breaks generated in ${ms}ms`)},10);
               document.querySelectorAll(".pg").forEach(x=>x.style.display="none");document.getElementById("p-roster").style.display="block";document.querySelectorAll(".ni").forEach(x=>x.classList.remove("on"));document.querySelector('.ni[data-p="roster"]').classList.add("on")}else{const msg=r.errors[0];if(msg.length>100){const errDiv=document.createElement("div");errDiv.style.cssText="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1c1917;border:2px solid #dc2626;border-radius:10px;padding:16px;max-width:500px;z-index:9999;color:#fca5a5;font-size:11px;white-space:pre-wrap;font-family:var(--mono)";errDiv.textContent=msg;const cb=document.createElement("button");cb.textContent="Close";cb.style.cssText="margin-top:10px;padding:6px 16px;background:#dc2626;color:#fff;border:none;border-radius:4px;cursor:pointer";cb.onclick=()=>errDiv.remove();errDiv.appendChild(cb);document.body.appendChild(errDiv)}else toast(msg,"err")}}catch(e){toast("Solver error: "+e.message,"err");console.error(e)}btn.innerHTML="&#9654; Generate";btn.disabled=false},30)}
-function buildRoster(sch){const wk=workIds(),N=D.agents.length;D.roster=D.agents.map((a,ai)=>{const shifts={};let wd=0,od=0,ald=0;DAYS.forEach((d,di)=>{const s=sch[ai][di];shifts[d]=s;if(wk.includes(s))wd++;else if(s==="OFF")od++;else if(s==="AL")ald++});return{...a,shifts,wd,od,ald,loc:{}}});D.summary={};DAYS.forEach((day,di)=>{const c={};for(let ai=0;ai<N;ai++){const s=sch[ai][di];c[s]=(c[s]||0)+1}D.summary[day]=c});
-  // Apply Office/WFH rules
-  const wsVal=document.getElementById("wkStart").value;
-  const weekDates=getWeekDates(wsVal);
-  _assignOfficeWFH(D.roster,weekDates);
-  const bREl=document.getElementById("bR");if(bREl)bREl.textContent=N;renderRoster();saveAndSync();}
+function buildRoster(sch){const wk=workIds(),N=D.agents.length;D.roster=D.agents.map((a,ai)=>{const shifts={};let wd=0,od=0,ald=0;DAYS.forEach((d,di)=>{const s=sch[ai][di];shifts[d]=s;if(wk.includes(s))wd++;else if(s==="OFF")od++;else if(s==="AL")ald++});return{...a,shifts,wd,od,ald,loc:{}}});D.summary={};DAYS.forEach((day,di)=>{const c={};for(let ai=0;ai<N;ai++){const s=sch[ai][di];c[s]=(c[s]||0)+1}D.summary[day]=c});_assignOfficeWFH(D.roster);const bREl=document.getElementById("bR");if(bREl)bREl.textContent=N;renderRoster();saveAndSync();}
 // ═══ WEEK NAVIGATION ═══
 function getWeekDates(wsVal){
   if(!wsVal)return null;
@@ -2611,14 +2314,8 @@ function renderRoster(){if(!D.roster){document.getElementById("rArea").innerHTML
   // Schedule Preference Requests
   if(D.schedPrefs&&D.schedPrefs.filter(p=>p.status==="Pending").length){h+='<div style="background:#1c1917;border:1px solid #44403c;border-radius:8px;padding:10px 14px;margin-bottom:10px"><div style="font-size:12px;font-weight:700;color:#fb923c;margin-bottom:6px">📋 Schedule Preference Requests</div>';D.schedPrefs.filter(p=>p.status==="Pending").forEach(p=>{h+='<div style="display:flex;align-items:center;gap:8px;padding:4px 0;flex-wrap:wrap"><b style="font-size:11px">'+p.name+'</b><span style="font-size:10px;color:var(--tx3)">wants</span><span class="sb" style="background:'+sColor(p.request)+';height:18px;min-width:28px;font-size:9px">'+p.request+'</span><span style="font-size:10px;color:var(--tx3)">on '+p.day+'</span>'+(p.reason?'<span style="font-size:10px;color:var(--tx2)">— '+p.reason+'</span>':'')+'<button class="btn bg bsm" style="font-size:10px;padding:2px 8px" onclick="approvePref(\''+p.id+'\')">✓ Note</button><button class="btn bd bsm" style="font-size:10px;padding:2px 8px" onclick="rejectPref(\''+p.id+'\')">✗ Reject</button></div>'});h+='</div>'}
   if(SWAP_MODE)h+='<div style="background:#78350f;border:1px solid #92400e;border-radius:6px;padding:8px 12px;margin-bottom:10px;font-size:12px;color:#fcd34d">&#128260; <b>SWAP MODE</b> — Click another agent on <b>'+SWAP_MODE.day+'</b> to swap with <b>'+D.roster[SWAP_MODE.ri].name+'</b> <button class="btn bs2 bsm" style="margin-left:8px" onclick="SWAP_MODE=null;renderRoster()">Cancel</button></div>';
-  h+='<div class="tw"><table><thead><tr><th style="text-align:left;min-width:180px">Agent</th><th>G</th>';DAYS.forEach((d,di)=>{const dateStr=weekDates?'<div style="font-size:8px;color:var(--tx3);font-weight:400">'+fmtShortDate(weekDates[di])+'</div>':'';h+=`<th>${d}${dateStr}</th>`});h+="<th>W</th><th>O</th><th>AL</th></tr></thead><tbody>";D.roster.forEach((r,ri)=>{const isSwapSrc=SWAP_MODE&&SWAP_MODE.ri===ri;h+=`<tr style="${isSwapSrc?"background:rgba(245,158,11,0.1)":""}"><td title="${r.name}" style="max-width:220px;overflow:hidden;text-overflow:ellipsis">${isSwapSrc?"🔄 ":""}${r.name}</td><td><span class="gb ${r.gender==="F"?"gf":"gm"}" style="font-size:9px">${r.gender}</span></td>`;DAYS.forEach((d,di)=>{const s=r.shifts[d];const loc=r.loc&&r.loc[d]?r.loc[d]:"";const locBadge=loc==="Office"?'<div style="font-size:7px;color:#4f8ef7;font-weight:700;line-height:1;margin-top:1px">🏢</div>':loc==="WFH"?'<div style="font-size:7px;color:#f5a623;font-weight:700;line-height:1;margin-top:1px">🏠</div>':"";const isSwapDay=SWAP_MODE&&SWAP_MODE.day===d&&!isSwapSrc;h+=`<td style="padding:4px 6px"><span class="sb" style="background:${sColor(s)};cursor:pointer;${isSwapDay?"outline:2px solid #f59e0b;outline-offset:1px":""}" onclick="swapShift(${ri},'${d}')" title="${isSwapDay?"Click to swap":"Click to change"}">${s}</span>${locBadge}</td>`});h+=`<td style="font-family:var(--mono);font-weight:600">${r.wd}</td><td style="font-family:var(--mono);font-weight:600">${r.od}</td><td style="font-family:var(--mono);font-weight:600">${r.ald}</td></tr>`});document.getElementById("rArea").innerHTML=h+"</tbody></table></div>";
-  // Daily Summary with Office/WFH counts
-  let sh='<div style="margin-top:16px"><h3 style="font-size:12px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">Daily Summary</h3><div class="sg">';DAYS.forEach((day,di)=>{const c=D.summary[day]||{};const dateStr=weekDates?'<div style="font-size:9px;color:var(--tx3);font-weight:400">'+fmtShortDate(weekDates[di])+'</div>':'';sh+=`<div class="sc"><div class="scd">${day}${dateStr}</div><div class="scs">`;ai.forEach(sid=>{sh+=`<span class="sb" style="background:${sColor(sid)};font-size:9.5px;min-width:40px;height:20px">${sid}:${c[sid]||0}</span>`});
-  // Office/WFH count
-  if(D.roster&&D.officeRules&&D.officeRules.enabled){
-    let officeC=0,wfhC=0;D.roster.forEach(r=>{if(r.loc&&r.loc[day]==="Office")officeC++;else if(r.loc&&r.loc[day]==="WFH")wfhC++});
-    sh+=`</div><div style="margin-top:4px;display:flex;gap:3px;justify-content:center"><span style="font-size:8px;font-weight:700;color:#4f8ef7;background:rgba(79,142,247,.12);padding:1px 5px;border-radius:3px">🏢${officeC}</span><span style="font-size:8px;font-weight:700;color:#f5a623;background:rgba(245,166,35,.12);padding:1px 5px;border-radius:3px">🏠${wfhC}</span>`;}
-  sh+="</div></div>"});document.getElementById("sArea").innerHTML=sh+"</div></div>"}
+  h+='<div class="tw"><table><thead><tr><th style="text-align:left;min-width:180px">Agent</th><th>G</th>';DAYS.forEach((d,di)=>{const dateStr=weekDates?'<div style="font-size:8px;color:var(--tx3);font-weight:400">'+fmtShortDate(weekDates[di])+'</div>':'';h+=`<th>${d}${dateStr}</th>`});h+="<th>W</th><th>O</th><th>AL</th></tr></thead><tbody>";D.roster.forEach((r,ri)=>{const isSwapSrc=SWAP_MODE&&SWAP_MODE.ri===ri;h+=`<tr style="${isSwapSrc?"background:rgba(245,158,11,0.1)":""}"><td title="${r.name}" style="max-width:220px;overflow:hidden;text-overflow:ellipsis">${isSwapSrc?"🔄 ":""}${r.name}</td><td><span class="gb ${r.gender==="F"?"gf":"gm"}" style="font-size:9px">${r.gender}</span></td>`;DAYS.forEach((d,di)=>{const s=r.shifts[d];const isSwapDay=SWAP_MODE&&SWAP_MODE.day===d&&!isSwapSrc;const _loc=r.loc&&r.loc[d]||"";const _locB=_loc==="Office"?'<div style="font-size:7px;color:#4f8ef7;font-weight:700;margin-top:1px">OFC</div>':_loc==="WFH"?'<div style="font-size:7px;color:#f5a623;font-weight:700;margin-top:1px">WFH</div>':"";h+=`<td style="padding:4px 6px"><span class="sb" style="background:${sColor(s)};cursor:pointer;${isSwapDay?"outline:2px solid #f59e0b;outline-offset:1px":""}" onclick="swapShift(${ri},'${d}')" title="${isSwapDay?"Click to swap":"Click to change"}">${s}</span>${_locB}</td>`});h+=`<td style="font-family:var(--mono);font-weight:600">${r.wd}</td><td style="font-family:var(--mono);font-weight:600">${r.od}</td><td style="font-family:var(--mono);font-weight:600">${r.ald}</td></tr>`});document.getElementById("rArea").innerHTML=h+"</tbody></table></div>";
+let sh='<div style="margin-top:16px"><h3 style="font-size:12px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">Daily Summary</h3><div class="sg">';DAYS.forEach((day,di)=>{const c=D.summary[day]||{};const dateStr=weekDates?'<div style="font-size:9px;color:var(--tx3);font-weight:400">'+fmtShortDate(weekDates[di])+'</div>':'';sh+=`<div class="sc"><div class="scd">${day}${dateStr}</div><div class="scs">`;ai.forEach(sid=>{sh+=`<span class="sb" style="background:${sColor(sid)};font-size:9.5px;min-width:40px;height:20px">${sid}:${c[sid]||0}</span>`});sh+="</div></div>"});document.getElementById("sArea").innerHTML=sh+"</div></div>"}
 // Inline shift swap + agent-to-agent swap
 let SWAP_MODE=null;
 function regenBreaksForDay(day){
@@ -6370,18 +6067,24 @@ function addTaskType() {
 function renderTaskAgentSkills() {
   const el = document.getElementById("tk-agent-skills-list");
   if (!el) return;
-  el.innerHTML = D.agents.map(a => {
+  const gf=document.getElementById("tkSkillFilter")?.value||"";
+  const filtered=gf?D.agents.filter(a=>a.gender===gf):D.agents;
+  el.innerHTML = filtered.map(a => {
     const agSkills = TK.agentSkills[a.id] || [];
     const chips = TK_SKILLS.map(s => {
       const on = agSkills.includes(s.key);
-      return `<span class="task-skill-chip ${on?"on":"off"}"
+      return `<span class="tk-chip ${on?"on":"off"}"
         style="${on?`color:${s.color};background:${s.bg};border-color:${s.color}`:""}"
         onclick="tkToggleSkill('${a.id}','${s.key}',this)">${s.label}</span>`;
     }).join("");
-    return `<div class="task-agent-row">
-      <span class="gb ${a.gender==="F"?"gf":"gm"}">${a.gender}</span>
-      <span style="min-width:180px;font-size:12.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis" title="${a.name}">${a.name}</span>
-      <div style="display:flex;gap:5px;flex-wrap:wrap">${chips}</div>
+    const skillCount=agSkills.length;
+    return `<div class="tk-card">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+        <span class="gb ${a.gender==="F"?"gf":"gm"}" style="font-size:9px">${a.gender}</span>
+        <span class="tk-name" title="${a.name}">${a.name}</span>
+        ${skillCount?`<span style="margin-left:auto;font-size:9px;font-weight:700;color:var(--cyn);font-family:var(--mono)">${skillCount}</span>`:""}
+      </div>
+      <div class="tk-chips">${chips}</div>
     </div>`;
   }).join("");
 }
@@ -6467,10 +6170,6 @@ function runTaskShuffle() {
 
   TK.results = { agents, weeks };
   tkSave();
-  // Update stats
-  const tkSA=document.getElementById("tkStatAssigned"),tkSU=document.getElementById("tkStatUnassigned");
-  if(tkSA)tkSA.textContent=agents.filter(a=>!a.task.includes("Unassigned")).length;
-  if(tkSU)tkSU.textContent=agents.filter(a=>a.task.includes("Unassigned")).length;
   taskTab("results");
   toast("✅ Task assignments generated!", "ok");
 }
@@ -6582,13 +6281,9 @@ navTo = function(p) {
       w1.value = monday.toISOString().split("T")[0];
     }
     renderTaskTypes();
-    // Update stats
-    const tkST=document.getElementById("tkStatTypes");if(tkST)tkST.textContent=TK.taskTypes.length;
-    const tkSAg=document.getElementById("tkStatAgents");if(tkSAg)tkSAg.textContent=D.agents.length;
-    if(TK.results){
-      const tkSA=document.getElementById("tkStatAssigned");if(tkSA)tkSA.textContent=TK.results.agents.filter(a=>!a.task.includes("Unassigned")).length;
-      const tkSU=document.getElementById("tkStatUnassigned");if(tkSU)tkSU.textContent=TK.results.agents.filter(a=>a.task.includes("Unassigned")).length;
-    }
+    const _ts1=document.getElementById("tkS1"),_ts2=document.getElementById("tkS2");
+    if(_ts1)_ts1.textContent=TK.taskTypes.length;if(_ts2)_ts2.textContent=D.agents.length;
+    if(TK.results){const _a=TK.results.agents||[];document.getElementById("tkS3").textContent=_a.filter(x=>!x.task.includes("Unassigned")).length;document.getElementById("tkS4").textContent=_a.filter(x=>x.task.includes("Unassigned")).length;}
   }
 };
 // ═══════════════════════════════════════════════════════════
@@ -7297,8 +6992,7 @@ cloudSave = async function() {
         breakPattern: BK.breakPattern, breakPatternC: BK.breakPatternC, peakWindows: BK.peakWindows,
         alRules: D.alRules||{}, swapRequests: D.swapRequests||[], schedPrefs: D.schedPrefs||[],
         kpis: D.kpis||{}, coaching: D.coaching||[], incidents: D.incidents||[], kb: D.kb||[],
-        broadcasts: D.broadcasts||[], nightRota: D.nightRota||{}, agentNotifications: D.agentNotifications||[],
-        officeRules: D.officeRules||{}
+        broadcasts: D.broadcasts||[], nightRota: D.nightRota||{}, agentNotifications: D.agentNotifications||[]
       },
       distribution_json: D.dist, agents_json: D.agents, special_requests_json: D.sr,
       annual_leave_json: D.al, roster_json: D.roster||null, breaks_json: BK.results||null,
@@ -7324,7 +7018,6 @@ loadWeekFromCloud = function(row) {
   if (s.broadcasts) { D.broadcasts = s.broadcasts; checkNewBroadcasts(s.broadcasts); }
   if (s.nightRota) D.nightRota = s.nightRota;
   if (s.agentNotifications) D.agentNotifications = s.agentNotifications;
-  if (s.officeRules) D.officeRules = s.officeRules;
 };
 
 // ═══════════════════════════════════════════════════════════
