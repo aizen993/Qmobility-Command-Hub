@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Qmobility Command Hub 2.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0d14;--s1:#111827;--s2:#1a2035;--s3:#222a3e;--s4:#2a3454;
+  --brd:rgba(255,255,255,.07);--brd2:rgba(255,255,255,.12);
+  --tx:#e8edf8;--tx2:#8a96b4;--tx3:#566180;
+  --acc:#4f8ef7;--acc2:#2d6ef0;--grn:#22c987;--red:#f05252;--orn:#f5a623;--pur:#9b72f5;--cyn:#22d3ee;
+  --r:14px;--r-sm:10px;
+  --ff:'Outfit',system-ui,sans-serif;--mono:'IBM Plex Mono',monospace;
+  --shadow:0 4px 24px rgba(0,0,0,.45);--shadow-lg:0 8px 40px rgba(0,0,0,.6);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--ff);background:var(--bg);color:var(--tx);min-height:100vh;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--s3);border-radius:6px}
+
+/* ═══ TOP BAR ═══ */
+.topbar{background:rgba(17,24,39,.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--brd);padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:300}
+.topbar h1{font-size:15px;font-weight:700;letter-spacing:-.3px;display:flex;align-items:center;gap:8px}
+.topbar h1 em{font-style:normal;background:linear-gradient(135deg,var(--acc),var(--cyn));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.topbar h1::before{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--grn);box-shadow:0 0 8px var(--grn)}
+.top-r{display:flex;gap:6px;align-items:center}
+
+/* ═══ LAYOUT ═══ */
+.shell{display:flex;min-height:calc(100vh - 52px)}
+.side{width:210px;background:var(--s1);border-right:1px solid var(--brd);padding:8px 6px;flex-shrink:0;position:sticky;top:52px;height:calc(100vh - 52px);overflow-y:auto;display:flex;flex-direction:column}
+.side-bottom{margin-top:auto;padding-top:8px;border-top:1px solid var(--brd)}
+.pane{flex:1;padding:20px 24px;overflow-x:hidden;min-width:0;max-width:calc(100vw - 210px)}
+.pg{display:none;width:100%}.pg.active{display:block}
+
+/* ═══ NAV ITEMS ═══ */
+.ns{padding:8px 10px 3px;font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--tx3);margin-top:4px}
+.ni{display:flex;align-items:center;gap:9px;padding:8px 11px;cursor:pointer;font-size:12px;font-weight:500;color:var(--tx2);transition:all .15s;border-radius:8px;user-select:none;position:relative;margin-bottom:1px}
+.ni:hover{color:var(--tx);background:rgba(255,255,255,.04)}
+.ni.on{color:#fff;background:linear-gradient(135deg,rgba(79,142,247,.18),rgba(34,211,238,.08));font-weight:600}
+.ni.on::before{content:'';position:absolute;left:0;top:4px;bottom:4px;width:3px;background:linear-gradient(180deg,var(--acc),var(--cyn));border-radius:0 3px 3px 0}
+.ni .ic{width:16px;text-align:center;font-size:13px;flex-shrink:0}
+.nb{margin-left:auto;font-size:8.5px;font-weight:700;background:rgba(240,82,82,.15);color:var(--red);padding:1px 6px;border-radius:20px;font-family:var(--mono)}
+
+/* ═══ CARDS ═══ */
+.card{background:var(--s1);border:1px solid var(--brd);border-radius:var(--r);margin-bottom:14px;overflow:visible;box-shadow:var(--shadow)}
+.ch{padding:12px 16px;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between}
+.ch h3{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--tx2)}
+.cb{padding:14px 16px}
+
+/* ═══ BUTTONS ═══ */
+.btn{font-family:var(--ff);font-size:11px;font-weight:600;padding:6px 14px;border-radius:8px;cursor:pointer;transition:all .15s;border:none;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;letter-spacing:.2px}
+.bp{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;box-shadow:0 2px 12px rgba(79,142,247,.25)}.bp:hover{box-shadow:0 4px 20px rgba(79,142,247,.35);transform:translateY(-1px)}
+.bs{background:var(--s2);color:var(--tx);border:1px solid var(--brd)}.bs:hover{background:var(--s3);border-color:var(--brd2)}
+.bd{background:rgba(240,82,82,.12);color:#f87171;border:1px solid rgba(240,82,82,.25)}.bd:hover{background:rgba(240,82,82,.2)}
+.bg{background:rgba(34,201,135,.1);color:#34d399;border:1px solid rgba(34,201,135,.2)}.bg:hover{background:rgba(34,201,135,.18)}
+.bo{background:rgba(245,166,35,.1);color:#fbbf24;border:1px solid rgba(245,166,35,.2)}.bo:hover{background:rgba(245,166,35,.18)}
+.bsm{padding:5px 10px;font-size:10px;border-radius:6px}
+.bic{width:26px;height:26px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;font-size:11px}
+
+/* ═══ FORM ELEMENTS ═══ */
+input,select,textarea{font-family:var(--ff);font-size:12px;background:var(--s2);border:1px solid var(--brd);border-radius:8px;padding:7px 11px;color:var(--tx);outline:none;transition:all .15s}
+input:focus,select:focus,textarea:focus{border-color:rgba(79,142,247,.4);box-shadow:0 0 0 3px rgba(79,142,247,.08)}
+input[type=number]{width:58px;text-align:center;font-family:var(--mono)}
+input[type=color]{width:34px;height:32px;padding:2px;cursor:pointer;border-radius:6px}
+input[type=date]{width:145px}input[type=time]{width:105px}
+select{cursor:pointer}label{font-size:11px;font-weight:500;color:var(--tx2)}
+.fr{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.fg{display:flex;flex-direction:column;gap:3px}
+
+/* ═══ TABLE ═══ */
+.tw{overflow-x:auto;border-radius:var(--r-sm);border:1px solid var(--brd);width:100%;display:block}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{padding:9px 11px;background:var(--s2);font-weight:600;color:var(--tx2);font-size:10px;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--brd);text-align:center;white-space:nowrap}
+td{padding:7px 11px;border-bottom:1px solid rgba(255,255,255,.03);text-align:center;white-space:nowrap}
+td:first-child{text-align:left}tr:hover td{background:rgba(255,255,255,.02)}
+
+/* ═══ SHIFT BADGE ═══ */
+.sb{display:inline-flex;align-items:center;justify-content:center;min-width:36px;height:22px;border-radius:5px;font-family:var(--mono);font-size:10px;font-weight:600;color:#fff}
+
+/* ═══ STAT CARDS ═══ */
+.stat-row{display:grid;gap:10px;margin-bottom:14px}
+.stat-card{background:var(--s1);border:1px solid var(--brd);border-radius:var(--r-sm);padding:12px;position:relative;overflow:hidden;box-shadow:var(--shadow);transition:all .2s;cursor:default}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--stat-accent,var(--acc));border-radius:var(--r-sm) var(--r-sm) 0 0}
+.stat-card:hover{background:var(--s2);transform:translateY(-1px)}
+.stat-card .sl{font-size:8.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--tx3);margin-bottom:4px;font-family:var(--mono)}
+.stat-card .sv{font-size:22px;font-weight:800;color:#fff;line-height:1}
+
+/* ═══ TOAST ═══ */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);padding:10px 22px;border-radius:10px;font-size:12px;font-weight:600;z-index:9999;max-width:500px;text-align:center;opacity:0;transition:all .3s;backdrop-filter:blur(12px);pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{background:rgba(34,201,135,.15);border:1px solid rgba(34,201,135,.3);color:#34d399}
+.toast.err{background:rgba(240,82,82,.15);border:1px solid rgba(240,82,82,.3);color:#f87171}
+.toast.warn{background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.3);color:#fbbf24}
+
+/* ═══ MISC ═══ */
+.ph{margin-bottom:14px}.ph h2{font-size:17px;font-weight:700;letter-spacing:-.3px}.ph p{font-size:11.5px;color:var(--tx2);margin-top:2px}
+.emp{text-align:center;padding:24px;color:var(--tx3);font-size:12px}
+.dt{font-family:var(--mono);font-weight:700}.dok{color:var(--grn)}.dbd{color:var(--red)}
+.ar{display:flex;align-items:center;gap:10px;padding:7px 11px;border-radius:6px;margin-bottom:3px;background:var(--s2);transition:background .08s;font-size:12px}.ar:hover{background:var(--s3)}
+.gb{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;font-family:var(--mono)}.gf{background:#4c1d95;color:#c4b5fd}.gm{background:#1e3a5f;color:#93c5fd}
+.tg{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;font-family:var(--mono);text-transform:uppercase}
+.sg{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:12px}.sc{background:var(--s2);border-radius:8px;padding:8px;text-align:center}.scd{font-size:9px;font-weight:700;color:var(--tx2);text-transform:uppercase;margin-bottom:5px}.scs{display:flex;flex-wrap:wrap;gap:2px;justify-content:center}
+.di{width:46px;text-align:center;background:transparent;border:1px solid transparent;color:var(--tx);font-family:var(--mono);font-size:12px;padding:2px;border-radius:5px}.di:hover{border-color:var(--brd)}.di:focus{border-color:rgba(79,142,247,.4);background:var(--s2)}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid var(--brd);border-top-color:var(--acc);border-radius:50%;animation:sp .5s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ═══ UPLOAD DROP ZONE ═══ */
+.drop-zone{border:2px dashed var(--brd2);border-radius:var(--r);padding:28px 20px;text-align:center;transition:all .2s;cursor:pointer;background:rgba(79,142,247,.02)}
+.drop-zone:hover,.drop-zone.dragover{border-color:var(--acc);background:rgba(79,142,247,.06)}
+.drop-zone .dz-icon{font-size:28px;margin-bottom:6px}
+.drop-zone .dz-text{font-size:12px;color:var(--tx2);font-weight:500}
+.drop-zone .dz-sub{font-size:10px;color:var(--tx3);margin-top:3px}
+
+/* ═══ RED FLAGS ═══ */
+.rf{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;margin-bottom:4px;font-size:11.5px;border-left:3px solid}
+.rf.sev-info{background:rgba(59,130,246,.06);border-color:#3b82f6;color:#93c5fd}
+.rf.sev-warn{background:rgba(245,166,35,.06);border-color:#f59e0b;color:#fcd34d}
+.rf.sev-crit{background:rgba(240,82,82,.06);border-color:#ef4444;color:#fca5a5}
+.rf.sev-severe{background:rgba(153,27,27,.1);border-color:#991b1b;color:#fca5a5}
+
+/* ═══ FLOOR CONTROL ═══ */
+.fc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
+.fc-agent{background:var(--s2);border:1px solid var(--brd);border-radius:var(--r-sm);padding:10px;border-left:4px solid var(--tx3);transition:all .15s}
+.fc-agent:hover{background:var(--s3)}
+.fc-agent .fc-name{font-weight:600;font-size:12px;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fc-agent .fc-meta{font-size:10px;color:var(--tx2);font-family:var(--mono)}
+
+/* ═══ RESPONSIVE ═══ */
+.ham{display:none;background:none;border:none;color:var(--tx);font-size:18px;cursor:pointer;padding:4px 8px;border-radius:6px}.ham:hover{background:var(--s2)}
+@media(max-width:860px){
+  .side{position:fixed;left:-220px;top:52px;z-index:200;transition:left .2s;height:calc(100vh - 52px);box-shadow:var(--shadow-lg)}.side.open{left:0}
+  .ham{display:inline-flex}
+  .pane{padding:12px 14px;max-width:100vw}
+  .stat-row{grid-template-columns:repeat(3,1fr)!important}
+  .fc-grid{grid-template-columns:repeat(2,1fr)}
+  .sg{grid-template-columns:repeat(4,1fr)}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ TOP BAR ═══ -->
+<div class="topbar">
+  <div style="display:flex;align-items:center;gap:10px">
+    <button class="ham" onclick="document.getElementById('sideNav').classList.toggle('open')">☰</button>
+    <h1><em>Qmobility</em> Command Hub</h1>
+    <span style="font-size:9px;font-weight:700;background:rgba(34,201,135,.12);color:var(--grn);padding:2px 8px;border-radius:20px;font-family:var(--mono)">2.0</span>
+  </div>
+  <div class="top-r">
+    <span id="topDate" style="font-family:var(--mono);font-size:10px;color:var(--tx3)"></span>
+    <button class="btn bs bsm" onclick="backupData()" title="Download backup">💾 Backup</button>
+    <button class="btn bs bsm" onclick="document.getElementById('restoreFile').click()" title="Restore from backup">📂</button>
+    <input type="file" id="restoreFile" accept=".json" style="display:none" onchange="restoreData(event)">
+  </div>
+</div>
+
+<!-- ═══ SHELL ═══ -->
+<div class="shell">
+
+<!-- ═══ SIDEBAR ═══ -->
+<nav class="side" id="sideNav">
+  <div class="ns">Operations</div>
+  <div class="ni on" data-p="dashboard"><span class="ic">📊</span>Dashboard</div>
+  <div class="ni" data-p="floor"><span class="ic">🖥</span>Floor Control</div>
+  <div class="ni" data-p="upload"><span class="ic">📤</span>Data Upload<span class="nb" id="bUpload" style="display:none">!</span></div>
+  <div class="ni" data-p="redflags"><span class="ic">🚩</span>Red Flags<span class="nb" id="bFlags">0</span></div>
+
+  <div class="ns">Scheduling</div>
+  <div class="ni" data-p="roster"><span class="ic">📅</span>Schedule</div>
+  <div class="ni" data-p="dist"><span class="ic">▦</span>Distribution</div>
+  <div class="ni" data-p="breaks"><span class="ic">☕</span>Breaks</div>
+  <div class="ni" data-p="nightshift"><span class="ic">🌙</span>Night Rota</div>
+
+  <div class="ns">People</div>
+  <div class="ni" data-p="attendance"><span class="ic">✅</span>Attendance</div>
+  <div class="ni" data-p="kpis"><span class="ic">📈</span>KPIs</div>
+  <div class="ni" data-p="al"><span class="ic">🌴</span>Annual Leave</div>
+  <div class="ni" data-p="requests"><span class="ic">📝</span>Requests<span class="nb" id="bSR">0</span></div>
+  <div class="ni" data-p="tasks"><span class="ic">⭐</span>Tasks</div>
+
+  <div class="ns">System</div>
+  <div class="ni" data-p="agents"><span class="ic">👥</span>Agents<span class="nb" id="bA" style="background:rgba(79,142,247,.15);color:var(--acc)">0</span></div>
+  <div class="ni" data-p="trackers"><span class="ic">🔗</span>Trackers</div>
+  <div class="ni" data-p="archive"><span class="ic">🗄</span>Archive</div>
+
+  <div class="side-bottom">
+    <div class="ni" data-p="settings"><span class="ic">⚙</span>Settings</div>
+  </div>
+</nav>
+
+<!-- ═══ MAIN PANE ═══ -->
+<main class="pane">
+
+<!-- ════════════════════════════════════════ -->
+<!-- PAGE: DASHBOARD                          -->
+<!-- ════════════════════════════════════════ -->
+<div id="p-dashboard" class="pg active">
+  <div class="ph" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+    <div><h2>Command Dashboard</h2><p id="dashDate"></p></div>
+    <div style="display:flex;gap:4px">
+      <button class="btn bp bsm" onclick="navTo('upload')">📤 Upload Data</button>
+      <button class="btn bg bsm" onclick="publishAgentData()">📡 Publish to Agents</button>
+    </div>
+  </div>
+  <div class="stat-row" id="dashStats" style="grid-template-columns:repeat(6,1fr)"></div>
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:14px" id="dashGrid">
+    <div>
+      <div class="card"><div class="ch"><h3>🚩 Red Flags Today</h3><span id="dashFlagCount" style="font-family:var(--mono);font-size:11px;color:var(--red)"></span></div><div class="cb" id="dashFlags"><div class="emp">Upload Genesys data to see flags</div></div></div>
+      <div class="card"><div class="ch"><h3>📊 Login Hours MTD</h3></div><div class="cb" id="dashMTD"><div class="emp">Upload attendance data to see MTD hours</div></div></div>
+    </div>
+    <div>
+      <div class="card"><div class="ch"><h3>📅 Today's Shifts</h3></div><div class="cb" id="dashShifts"><div class="emp">Generate a schedule first</div></div></div>
+      <div class="card"><div class="ch"><h3>🌴 Upcoming Leave</h3></div><div class="cb" id="dashLeave"></div></div>
+      <div class="card"><div class="ch"><h3>📝 Pending Requests</h3></div><div class="cb" id="dashRequests"><div class="emp">No pending requests</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<!-- PAGE: FLOOR CONTROL                      -->
+<!-- ════════════════════════════════════════ -->
+<div id="p-floor" class="pg">
+  <div class="ph" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+    <div><h2>Floor Control</h2><p>All agents scheduled today — color-coded by last known status</p></div>
+    <div class="fr"><select id="floorShiftFilter" onchange="renderFloor()" style="width:120px"><option value="all">All Shifts</option></select></div>
+  </div>
+  <div class="stat-row" id="floorStats" style="grid-template-columns:repeat(5,1fr);margin-bottom:14px"></div>
+  <div class="fc-grid" id="floorGrid"><div class="emp">Generate a schedule and upload Genesys data to see floor status</div></div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<!-- PAGE: DATA UPLOAD                        -->
+<!-- ════════════════════════════════════════ -->
+<div id="p-upload" class="pg">
+  <div class="ph"><h2>Data Upload</h2><p>Drag & drop Genesys exports — auto-detected and processed</p></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+    <div class="drop-zone" id="dzAttendance" data-type="attendance">
+      <div class="dz-icon">📋</div>
+      <div class="dz-text">Agent Status / Attendance</div>
+      <div class="dz-sub">Genesys → Performance → Agent Status → Export</div>
+      <div class="dz-sub" id="dzAttLast" style="color:var(--grn);margin-top:4px"></div>
+    </div>
+    <div class="drop-zone" id="dzAHT" data-type="aht">
+      <div class="dz-icon">⏱</div>
+      <div class="dz-text">AHT / Performance</div>
+      <div class="dz-sub">Genesys → Performance → Agent Performance → Export</div>
+      <div class="dz-sub" id="dzAHTLast" style="color:var(--grn);margin-top:4px"></div>
+    </div>
+    <div class="drop-zone" id="dzQA" data-type="qa">
+      <div class="dz-icon">🎯</div>
+      <div class="dz-text">QA Scores</div>
+      <div class="dz-sub">QA monitoring sheet with Agent Name, QA Score</div>
+      <div class="dz-sub" id="dzQALast" style="color:var(--grn);margin-top:4px"></div>
+    </div>
+    <div class="drop-zone" id="dzTransfer" data-type="transfer">
+      <div class="dz-icon">🔄</div>
+      <div class="dz-text">Transfer Rate / CSAT</div>
+      <div class="dz-sub">Transfer rate and CSAT scores per agent</div>
+      <div class="dz-sub" id="dzTransLast" style="color:var(--grn);margin-top:4px"></div>
+    </div>
+  </div>
+  <div class="card"><div class="ch"><h3>📜 Upload Log</h3><button class="btn bs bsm" onclick="document.getElementById('uploadLog').innerHTML=''">Clear</button></div><div class="cb" id="uploadLog" style="max-height:300px;overflow-y:auto;font-family:var(--mono);font-size:11px"><div class="emp">Drop files above to begin</div></div></div>
+  <div class="card" id="uploadPreview" style="display:none"><div class="ch"><h3>📊 Upload Results</h3></div><div class="cb" id="uploadPreviewContent"></div></div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<!-- PAGE: RED FLAGS                          -->
+<!-- ════════════════════════════════════════ -->
+<div id="p-redflags" class="pg">
+  <div class="ph" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+    <div><h2>Red Flags</h2><p>All unresolved flags from attendance analysis</p></div>
+    <div class="fr">
+      <select id="rfFilter" onchange="renderRedFlags()" style="width:120px"><option value="all">All Severity</option><option value="severe">Severe</option><option value="crit">Critical</option><option value="warn">Warning</option><option value="info">Info</option></select>
+      <select id="rfAgent" onchange="renderRedFlags()" style="width:180px"><option value="all">All Agents</option></select>
+      <button class="btn bs bsm" onclick="exportRedFlags()">📊 Export</button>
+    </div>
+  </div>
+  <div id="rfList"><div class="emp">No red flags — upload Genesys data to trigger analysis</div></div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<!-- PAGE: SCHEDULE (ROSTER)                  -->
+<!-- ════════════════════════════════════════ -->
+<div id="p-roster" class="pg">
+  <div class="ph" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+    <div><h2>Weekly Roster</h2><p>Generated schedule — click any shift to swap</p></div>
+    <div style="display:flex;gap:4px;flex-wrap:wrap">
+      <button class="btn bs bsm" onclick="navWeek(-1)">◀ Prev</button>
+      <button class="btn bp bsm" onclick="navWeek(0)">Today</button>
+      <button class="btn bs bsm" onclick="navWeek(1)">Next ▶</button>
+      <span id="rosterWeekNav" style="background:var(--s2);border:1px solid var(--brd);border-radius:8px;padding:3px 10px;font-size:11px;font-family:var(--mono);color:var(--cyn);white-space:nowrap;min-width:150px;text-align:center">—</span>
+      <button class="btn bg bsm" onclick="saveWeekArchive()">💾 Save</button>
+      <button class="btn bs bsm" onclick="exportCSV()">📄 CSV</button>
+      <button class="btn bg bsm" onclick="exportXLSX()">📊 Excel</button>
+    </div>
+  </div>
+  <div id="rWeekLabel" style="font-family:var(--mono);font-size:11px;color:var(--cyn);margin-bottom:8px"></div>
+  <div id="rArea"><div class="emp">Configure settings then click <b>Generate</b></div></div>
+  <div id="sArea"></div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<!-- PAGE: DISTRIBUTION                       -->
+<!-- ════════════════════════════════════════ -->
+<div id="p-dist" class="pg">
+  <div class="ph"><h2>Daily Distribution</h2><p>Headcount per shift per day. Total must = agent count (<b id="dAC">0</b>).</p></div>
+  <div class="card"><div class="cb" style="overflow-x:auto"><table id="dTbl"></table></div></div>
+  <div class="card"><div class="ch"><h3>⚡ Quick Adjust</h3></div><div class="cb"><div class="fr"><div class="fg"><label>Day</label><select id="qaDay" style="width:80px"></select></div><div class="fg"><label>From</label><select id="qaFrom" style="width:80px"></select></div><div class="fg"><label>To</label><select id="qaTo" style="width:80px"></select></div><div class="fg"><label>Amt</label><input type="number" id="qaAmt" value="1" min="1" style="width:50px"></div><button class="btn bp bsm" style="align-self:flex-end" onclick="quickAdj()">Move</button></div></div></div>
+  <div class="card"><div class="ch"><h3>📐 Rules & Gender Restrictions</h3></div><div class="cb">
+    <div class="fr"><label style="width:200px">Max OFF / agent / week</label><input type="number" id="rMO" min="0" max="7" value="2"></div>
+    <div class="fr"><label style="width:200px">Max working days / agent / week</label><input type="number" id="rMW" min="1" max="7" value="5"></div>
+    <button class="btn bp bsm" style="margin:6px 0" onclick="saveRules()">Save Rules</button>
+    <div id="grArea" style="margin-top:10px"></div>
+  </div></div>
+  <div class="card"><div class="ch"><h3>▶ Generate Schedule</h3></div><div class="cb">
+    <div class="fr"><div class="fg"><label>Week Start (Monday)</label><input type="date" id="wkStart"></div>
+    <button class="btn bp" id="solveBtn" onclick="runSolver()" style="align-self:flex-end">▶ Generate</button>
+    <button class="btn bs bsm" style="align-self:flex-end" onclick="runSolver(true)">🔀 Randomize</button></div>
+  </div></div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<!-- PAGE: BREAKS                             -->
+<!-- ════════════════════════════════════════ -->
+<div id="p-breaks" class="pg">
+  <div class="ph" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+    <div><h2>Break Schedule</h2><p>Auto-generated break & meal times</p></div>
+    <div class="fr">
+      <button class="btn bp bsm" onclick="regenAllBreaks()">🔄 Regenerate All</button>
+    </div>
+  </div>
+  <div class="card"><div class="ch"><h3>⚙ Break Settings</h3></div><div class="cb">
+    <div class="fr"><div class="fg"><label>Break Pattern (15-min slots per agent)</label><input id="bkPat" value="1,1,1,1" style="width:140px;font-family:var(--mono)" title="Comma-separated: e.g. 1,1,1,1 = 4 breaks × 15min each"></div>
+    <div class="fg"><label>C-Shift Pattern</label><input id="bkPatC" value="1,1" style="width:100px;font-family:var(--mono)"></div></div>
+  </div></div>
+  <div style="display:flex;gap:4px;margin-bottom:10px" id="bkDayTabs"></div>
+  <div id="bkDayArea"><div class="emp">Generate roster first, then breaks will appear here</div></div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<!-- PAGE: NIGHT SHIFT ROTA                   -->
+<!-- ════════════════════════════════════════ -->
+<div id="p-nightshift" class="pg">
+  <div class="ph" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+    <div><h2>🌙 Night Shift Rota</h2><p>Two C-shift slots: weekday & weekend. Agents rotate weekly.</p></div>
+    <div class="fr"><button class="btn bp bsm" onclick="saveNightRota()">💾 Save</button><button class="btn bg bsm" onclick="autoRotateNight()">🔄 Rotate</button></div>
+  </div>
+  <div id="nightRotaArea"><div class="emp">Loading night rota...</div></div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<!-- PAGE: ATTENDANCE                         -->
+<!-- ════════════════════════════════════════ -->
+<div id="p-attendance" class="pg">
+  <div class="ph" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+    <div><h2>Attendance</h2><p>Schedule vs Genesys actuals — auto-compared on upload</p></div>
+    <div class="fr">
+      <select id="attMonth" onchange="renderAttendance()" style="width:130px"></select>
+      <button class="btn bp bsm" onclick="navTo('upload')">📤 Upload</button>
+    </div>
+  </div>
+  <div class="stat-row" id="attStats" style="grid-template-columns:repeat(5,1fr);margin-bottom:14px"></div>
+  <div id="attArea"><div class="emp">Upload Genesys Agent Status export to see attendance analysis</div></div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<!-- PAGE: KPIs                               -->
+<!-- ════════════════════════════════════════ -->
+<div id="p-kpis" class="pg">
+  <div class="ph" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+    <div><h2>Team Performance</h2><p>KPI tracking from Genesys uploads</p></div>
+    <div class="fr">
+      <select id="kpiMonth" onchange="renderKPIs()" style="width:130px"></select>
+      <button class="btn bp bsm" onclick="navTo('upload')">📤 Upload</button>
+    </div>
+  </div>
+  <div id="kpiArea"><div class="emp">Upload AHT / Performance data to see KPIs</div></div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<!-- PAGE: ANNUAL LEAVE                       -->
+<!-- ════════════════════════════════════════ -->
+<div id="p-al" class="pg">
+  <div class="ph" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+    <div><h2>Annual Leave</h2><p>Year-based tracking with overlap validation</p></div>
+    <div class="fr">
+      <button class="btn bp bsm alYearBtn" data-y="2025" onclick="setALYear(2025)">2025</button>
+      <button class="btn bs bsm alYearBtn" data-y="2026" onclick="setALYear(2026)">2026</button>
+      <button class="btn bs bsm alYearBtn" data-y="all" onclick="setALYear('all')">All</button>
+    </div>
+  </div>
+  <div id="alPendingRequests"></div>
+  <div id="alNotifications"></div>
+  <div class="card"><div class="ch"><h3>➕ Add Leave</h3></div><div class="cb">
+    <div class="fr"><div class="fg"><label>Agent</label><select id="alAgent" style="width:220px"></select></div><div class="fg"><label>From</label><input type="date" id="alS"></div><div class="fg"><label>To</label><input type="date" id="alE"></div><div class="fg"><label>Status</label><select id="alSt" style="width:100px"><option>Pending</option><option selected>Approved</option><option>Ongoing</option><option>Completed</option></select></div><button class="btn bp bsm" style="align-self:flex-end" onclick="addAL()">Add</button></div>
+  </div></div>
+  <div class="card"><div class="ch"><h3>📋 Leave Records <span id="alCount" style="font-family:var(--mono);color:var(--cyn);margin-left:6px">0</span></h3></div><div class="cb" id="alL"></div></div>
+  <div id="alBalance"></div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<!-- PAGE: REQUESTS                           -->
+<!-- ════════════════════════════════════════ -->
+<div id="p-requests" class="pg">
+  <div class="ph"><h2>Requests & Approvals</h2><p>Agent requests and supervisor approvals</p></div>
+  <div id="reqArea"><div class="emp">No pending requests</div></div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<!-- PAGE: TASKS                              -->
+<!-- ════════════════════════════════════════ -->
+<div id="p-tasks" class="pg">
+  <div class="ph" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+    <div><h2>Daily Tasks</h2><p>Rotate and assign daily tasks to agents</p></div>
+    <div class="fr"><button class="btn bp bsm" onclick="runTaskShuffle()">🔀 Shuffle & Assign</button><button class="btn bs bsm" onclick="exportTasksCSV()">📄 Export</button></div>
+  </div>
+  <div id="taskArea"><div class="emp">Configure task types and run shuffle</div></div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<!-- PAGE: AGENTS                             -->
+<!-- ════════════════════════════════════════ -->
+<div id="p-agents" class="pg">
+  <div class="ph" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+    <div><h2>Agents</h2><p>Manage team — <span id="agentCount">0</span> agents</p></div>
+    <div class="fr"><button class="btn bp bsm" onclick="showEl('addAF')">+ Add Agent</button><button class="btn bs bsm" onclick="showEl('agLinksPanel')">🔗 Portal Links</button></div>
+  </div>
+  <div id="addAF" class="card" style="display:none"><div class="cb"><div class="fr"><div class="fg"><label>Name</label><input id="nAN" placeholder="Full name..." style="width:240px"></div><div class="fg"><label>Gender</label><select id="nAG"><option value="F">Female</option><option value="M" selected>Male</option></select></div><button class="btn bp bsm" style="align-self:flex-end" onclick="addAgent()">Add</button><button class="btn bs bsm" style="align-self:flex-end" onclick="hideEl('addAF')">Cancel</button></div></div></div>
+  <div id="agLinksPanel" class="card" style="display:none"><div class="ch"><h3>🔗 Agent Portal Links</h3><button class="btn bs bsm bic" onclick="hideEl('agLinksPanel')">✕</button></div><div class="cb"><p style="font-size:11px;color:var(--tx2);margin-bottom:8px">Each agent gets a unique link to view their schedule, breaks, and KPIs.</p><div id="agLinksArea" style="max-height:300px;overflow-y:auto"></div></div></div>
+  <div id="shiftDefs" class="card"><div class="ch"><h3>⏰ Shift Definitions</h3><button class="btn bp bsm" onclick="showEl('addSF')">+ Add Shift</button></div>
+    <div id="addSF" style="display:none;padding:12px 16px;border-bottom:1px solid var(--brd)"><div class="fr"><div class="fg"><label>Code</label><input id="nSI" placeholder="E" style="width:50px;text-transform:uppercase"></div><div class="fg"><label>Name</label><input id="nSN" placeholder="Evening" style="width:130px"></div><div class="fg"><label>Start</label><input type="time" id="nSS" value="09:00"></div><div class="fg"><label>End</label><input type="time" id="nSE" value="17:00"></div><div class="fg"><label>Color</label><input type="color" id="nSC" value="#6366f1"></div><button class="btn bp bsm" style="align-self:flex-end" onclick="addShift()">Add</button></div></div>
+    <div class="cb" id="sList"></div>
+  </div>
+  <div class="card"><div class="ch"><h3>👥 Agent List</h3></div><div class="cb" id="aList"></div></div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<!-- PAGE: TRACKERS                           -->
+<!-- ════════════════════════════════════════ -->
+<div id="p-trackers" class="pg">
+  <div class="ph" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+    <div><h2>Trackers Hub</h2><p>Central link hub for all operational trackers</p></div>
+    <button class="btn bp bsm" onclick="addTracker()">+ Add Tracker</button>
+  </div>
+  <div id="trackerList"></div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<!-- PAGE: ARCHIVE                            -->
+<!-- ════════════════════════════════════════ -->
+<div id="p-archive" class="pg">
+  <div class="ph" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+    <div><h2>Week Archive</h2><p>Saved schedules — load any past week</p></div>
+    <div class="fr"><button class="btn bp bsm" onclick="importWeekFile()">📂 Import JSON</button><input type="file" id="impFile" accept=".json" style="display:none" onchange="handleImport(event)"></div>
+  </div>
+  <div class="card"><div class="cb" id="archList"><div class="emp">No saved weeks yet</div></div></div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<!-- PAGE: SETTINGS                           -->
+<!-- ════════════════════════════════════════ -->
+<div id="p-settings" class="pg">
+  <div class="ph"><h2>Settings</h2><p>Configuration & data management</p></div>
+  <div class="card"><div class="ch"><h3>📡 Agent Portal Publishing</h3></div><div class="cb">
+    <p style="font-size:11.5px;color:var(--tx2);margin-bottom:8px">Publish schedule/KPI data so agents can see it via their portal link. Data is stored as a static JSON file.</p>
+    <div class="fr"><button class="btn bg" onclick="publishAgentData()">📡 Publish Agent Data (Download JSON)</button></div>
+    <p style="font-size:10px;color:var(--tx3);margin-top:6px">Upload the downloaded <code>agent_data.json</code> to your GitHub repo's <code>/data/</code> folder.</p>
+  </div></div>
+  <div class="card"><div class="ch"><h3>🎯 Red Flag Thresholds</h3></div><div class="cb">
+    <div class="fr"><label style="width:200px">Late grace period (min)</label><input type="number" id="rfGrace" value="5" min="0" max="30"></div>
+    <div class="fr"><label style="width:200px">Break allowance (min)</label><input type="number" id="rfBreakAllow" value="15" min="0" max="60"></div>
+    <div class="fr"><label style="width:200px">Meal allowance (min)</label><input type="number" id="rfMealAllow" value="30" min="0" max="60"></div>
+    <div class="fr"><label style="width:200px">Away flag threshold (min)</label><input type="number" id="rfAwayThresh" value="15" min="0" max="120"></div>
+    <button class="btn bp bsm" style="margin-top:6px" onclick="saveSettings()">Save Thresholds</button>
+  </div></div>
+  <div class="card"><div class="ch"><h3>💾 Data Management</h3></div><div class="cb">
+    <div class="fr"><button class="btn bg" onclick="backupData()">💾 Download Full Backup (JSON)</button><button class="btn bo" onclick="document.getElementById('restoreFile2').click()">📂 Restore from Backup</button><input type="file" id="restoreFile2" accept=".json" style="display:none" onchange="restoreData(event)"></div>
+    <div class="fr" style="margin-top:8px"><button class="btn bd" onclick="if(confirm('⚠ This will erase ALL data. Are you sure?'))clearAllData()">🗑 Reset All Data</button></div>
+  </div></div>
+  <div class="card"><div class="ch"><h3>ℹ About</h3></div><div class="cb">
+    <p style="font-size:11.5px;color:var(--tx2)">Qmobility Command Hub 2.0 — Built for Qmobility call center operations.</p>
+    <p style="font-size:10px;color:var(--tx3);margin-top:4px">Storage: localStorage + IndexedDB | Hosting: GitHub Pages | No cloud dependency</p>
+    <p style="font-size:10px;color:var(--tx3)">KB: <a href="https://yousef-shtawi-qmobility.my.canva.site/call-centre-kb/#page-0" target="_blank" style="color:var(--cyn)">Open Knowledge Base</a></p>
+  </div></div>
+</div>
+
+</main>
+</div>
+
+<!-- ═══ TOAST ═══ -->
+<div id="toast" class="toast"></div>
+
+<!-- ═══ SCRIPTS ═══ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════
+   QMOBILITY COMMAND HUB 2.0
+   localStorage-first | No cloud dependency | Excel upload engine
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+// ═══ CONSTANTS ═══
+const DAYS=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const uid=()=>Math.random().toString(36).slice(2,9);
+const stableId=(name)=>{let h=0;for(let i=0;i<name.length;i++){h=((h<<5)-h)+name.charCodeAt(i);h|=0}return'a'+Math.abs(h).toString(36).slice(0,8)};
+const NW2=new Set(["OFF","AL","PH"]);
+const SH_MAP=()=>{const m={};D.shifts.forEach(s=>{const[sh,sm]=s.start.split(":").map(Number),[eh,em]=s.end.split(":").map(Number);let st=sh*60+sm,en=eh*60+em;if(en<=st)en+=1440;m[s.id]={s:st,e:en,dur:(en-st)/60}});return m};
+
+// ═══ DATA STORE ═══
+let D={
+  shifts:[
+    {id:"A",name:"Morning",start:"07:00",end:"16:00",color:"#059669"},
+    {id:"MS",name:"Middle Support",start:"11:00",end:"20:00",color:"#d97706"},
+    {id:"B",name:"Afternoon",start:"16:00",end:"01:00",color:"#7c3aed"},
+    {id:"C",name:"Night",start:"00:00",end:"09:00",color:"#1e3a5f"}
+  ],
+  agents:[
+    ...["Nafisa Ali","AYA Alaeldin","Mennatallah Mohamed Farouk Mostafa Ismail","Amina Saad","Nadeen Ahmed Said Salem","Habiba Ayman Mohamed Refaat Mahmoud Elbassyouny","Shimaa Adel Abdelmanaem Khalil Ebrahem"].map(n=>({id:stableId(n),name:n,gender:"F",genesysAlias:""})),
+    ...["Walid Hamdy Mahmoud Ahmed","Mohamed Nada","Omer Hassan","Mahmoud Yasser Mahmoud Zanker","Islam Abdalla Suliman Khalifa","Morad Mahmoud Hassen Mohamed Morad","Mohamed Magdi Mohamed Hassan Ali","Mohamed Ezzat Mohamed Hussein Sadiq","Amir Mounir RizqAllah Fam","Mohamed Ahmed Abdallah Zidan","Omar Nasreldien Mahrous","Mohamed Mahmoud Nasr Othman Kher","Ali Yasser Ali Elgohary","Abdelrahman Reda Mohamed Abouelnasr Elmaghraby"].map(n=>({id:stableId(n),name:n,gender:"M",genesysAlias:""}))
+  ],
+  rules:{max_off:2,max_work:5},
+  genderRules:{F:["A","MS"],M:[]},
+  dist:{Mon:{A:8,MS:2,B:5,C:1,OFF:5,AL:2},Tue:{A:7,MS:2,B:4,C:1,OFF:7,AL:2},Wed:{A:7,MS:2,B:4,C:1,OFF:7,AL:2},Thu:{A:7,MS:2,B:5,C:1,OFF:6,AL:2},Fri:{A:8,MS:2,B:5,C:1,OFF:5,AL:2},Sat:{A:8,MS:2,B:4,C:1,OFF:6,AL:2},Sun:{A:8,MS:2,B:4,C:1,OFF:6,AL:2}},
+  al:[],sr:[],roster:null,summary:null,
+  attendance:{},kpis:{},qa:{},redFlags:[],approvals:[],
+  trackers:[
+    {name:"Attendance",freq:"Daily",owner:"Mudathir",purpose:"Track presence",link:""},
+    {name:"Login Tracker",freq:"Daily",owner:"Yousef",purpose:"Track login hours, lateness",link:""},
+    {name:"Agent Performance",freq:"Daily",owner:"Yousef & Mudathir",purpose:"Performance tracking & coaching",link:""},
+    {name:"Transfer Rate",freq:"Daily",owner:"",purpose:"Monitor CSAT transfer rate",link:""},
+    {name:"QA Reviews",freq:"Twice Weekly",owner:"",purpose:"Call quality monitoring",link:""},
+    {name:"DSAT Analysis",freq:"Twice Weekly",owner:"",purpose:"Analyze DSAT feedback",link:""},
+    {name:"Schedule",freq:"Weekly",owner:"Yousef",purpose:"Publish staffing schedule",link:""},
+    {name:"Leave Plan",freq:"Weekly",owner:"",purpose:"Manage annual leave & overlaps",link:""},
+    {name:"Short Calls",freq:"Twice Weekly",owner:"",purpose:"Track callback resolutions",link:""},
+    {name:"Abandon Tracker",freq:"As Needed",owner:"",purpose:"Track abandoned calls",link:""}
+  ],
+  nightRota:{eligible:[],rotationOrder:[],weekdayQueue:[],weekendQueue:[],history:[]},
+  tasks:{types:[],skills:{},lastPlan:null},
+  settings:{graceMin:5,breakAllow:15,mealAllow:30,awayThresh:15}
+};
+
+let BK={breakPattern:[1,1,1,1],breakPatternC:[1,1],peakWindows:[{from:420,to:660,max:1},{from:660,to:900,max:2},{from:900,to:1020,max:1},{from:1020,to:1500,max:2},{from:0,to:420,max:2}],results:null};
+
+let AL_YEAR=2026;
+
+// ═══ UTILITY FUNCTIONS ═══
+function showEl(id){document.getElementById(id).style.display="block"}
+function hideEl(id){document.getElementById(id).style.display="none"}
+let toastT;function toast(m,t="ok"){const el=document.getElementById("toast");el.textContent=m;el.className="toast "+t+" show";clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove("show"),4000)}
+function allIds(){return D.shifts.map(s=>s.id).concat(["OFF","AL"])}
+function workIds(){return D.shifts.map(s=>s.id)}
+function sColor(sid){const s=D.shifts.find(x=>x.id===sid);if(s)return s.color;if(sid==="OFF")return"#4b5563";if(sid==="AL")return"#dc2626";if(sid==="PH")return"#0891b2";return"#374151"}
+function dl(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();URL.revokeObjectURL(a.href)}
+function fmtMin(m){if(m==null||isNaN(m))return"—";const h=Math.floor(Math.abs(m)/60);const mm=Math.round(Math.abs(m)%60);return(m<0?"-":"")+h+"h "+String(mm).padStart(2,"0")+"m"}
+function fmtHrs(h){if(h==null||isNaN(h))return"—";return h.toFixed(1)+"h"}
+function todayStr(){return new Date().toISOString().split("T")[0]}
+function monthStr(d){return(d||todayStr()).slice(0,7)}
+
+// ═══ SAVE / LOAD ═══
+function save(){try{localStorage.setItem("qch2_data",JSON.stringify(D));localStorage.setItem("qch2_breaks",JSON.stringify(BK))}catch(e){console.error("Save failed:",e)}}
+function loadSaved(){
+  try{
+    const s=localStorage.getItem("qch2_data");
+    if(s){const d=JSON.parse(s);Object.assign(D,d)}
+    const b=localStorage.getItem("qch2_breaks");
+    if(b){const bk=JSON.parse(b);Object.assign(BK,bk)}
+  }catch(e){console.error("Load failed:",e)}
+}
+
+// ═══ NAVIGATION ═══
+function navTo(p){
+  document.querySelectorAll(".pg").forEach(x=>x.classList.remove("active"));
+  const pg=document.getElementById("p-"+p);
+  if(pg)pg.classList.add("active");
+  document.querySelectorAll(".ni").forEach(x=>x.classList.remove("on"));
+  const ni=document.querySelector('.ni[data-p="'+p+'"]');
+  if(ni)ni.classList.add("on");
+  if(p==="dashboard")renderDashboard();
+  if(p==="floor")renderFloor();
+  if(p==="attendance")renderAttendance();
+  if(p==="kpis")renderKPIs();
+  if(p==="redflags")renderRedFlags();
+  if(p==="al"){renderAL();popALSel()}
+  if(p==="agents"){renderAgents();renderAgentLinks();renderShifts()}
+  if(p==="archive")renderArchive();
+  if(p==="trackers")renderTrackers();
+  document.getElementById("sideNav").classList.remove("open");
+}
+
+// ═══ INIT ═══
+document.getElementById("sideNav").addEventListener("click",e=>{const ni=e.target.closest(".ni");if(!ni)return;navTo(ni.dataset.p)});
+
+// ═══════════════════════════════════════════════════════════════
+// UPLOAD ENGINE — The core new feature
+// ═══════════════════════════════════════════════════════════════
+function initUpload(){
+  document.querySelectorAll(".drop-zone").forEach(dz=>{
+    dz.addEventListener("dragover",e=>{e.preventDefault();dz.classList.add("dragover")});
+    dz.addEventListener("dragleave",()=>dz.classList.remove("dragover"));
+    dz.addEventListener("drop",e=>{e.preventDefault();dz.classList.remove("dragover");if(e.dataTransfer.files.length)processUpload(e.dataTransfer.files[0],dz.dataset.type)});
+    dz.addEventListener("click",()=>{const inp=document.createElement("input");inp.type="file";inp.accept=".xlsx,.xlsm,.csv";inp.onchange=()=>{if(inp.files.length)processUpload(inp.files[0],dz.dataset.type)};inp.click()});
+  });
+}
+
+function uploadLog(msg,type="info"){
+  const el=document.getElementById("uploadLog");
+  if(el.querySelector(".emp"))el.innerHTML="";
+  const ts=new Date().toLocaleTimeString();
+  const colors={info:"var(--tx2)",ok:"var(--grn)",err:"var(--red)",warn:"var(--orn)"};
+  el.innerHTML=`<div style="padding:3px 0;color:${colors[type]||colors.info}">[${ts}] ${msg}</div>`+el.innerHTML;
+}
+
+function processUpload(file,hintType){
+  uploadLog(`Processing: ${file.name} (${(file.size/1024).toFixed(1)}KB)...`);
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const wb=XLSX.read(new Uint8Array(e.target.result),{type:"array",cellDates:true});
+      const sheet=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(sheet,{defval:null});
+      if(!rows.length){uploadLog("Empty file","err");return}
+      const cols=Object.keys(rows[0]);
+      // Auto-detect file type
+      const type=detectFileType(cols,hintType);
+      uploadLog(`Detected type: ${type} (${rows.length} rows, ${cols.length} columns)`,"ok");
+      
+      if(type==="attendance")processAttendanceUpload(rows);
+      else if(type==="aht")processAHTUpload(rows);
+      else if(type==="qa")processQAUpload(rows);
+      else if(type==="transfer")processTransferUpload(rows);
+      else uploadLog("Could not determine file type — check column headers","err");
+    }catch(ex){uploadLog("Parse error: "+ex.message,"err");console.error(ex)}
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function detectFileType(cols,hint){
+  const c=cols.map(x=>String(x).toLowerCase());
+  if(c.includes("agent id")&&(c.includes("logged in")||c.includes("log in")))return"attendance";
+  if(c.includes("avg handle")||c.includes("avg talk"))return"aht";
+  if(c.includes("qa score"))return"qa";
+  if(c.includes("transfer rate")||c.includes("csat"))return"transfer";
+  return hint||"unknown";
+}
+
+// ═══ ATTENDANCE UPLOAD + COMPARISON ENGINE ═══
+function processAttendanceUpload(rows){
+  const shMap=SH_MAP();
+  const month=guessMonth(rows);
+  if(!D.attendance[month])D.attendance[month]=[];
+  
+  let processed=0,matched=0,flags=0;
+  const newRecords=[];
+  const newFlags=[];
+  
+  rows.forEach(row=>{
+    const agName=row["Agent Name"];
+    const agId=row["Agent Id"];
+    if(!agName)return;
+    
+    const agent=matchAgent(agName);
+    if(!agent){uploadLog(`⚠ Unmatched: ${agName}`,"warn");return}
+    
+    const date=parseIntervalDate(row["Interval Start"]);
+    if(!date)return;
+    
+    // Get planned shift for this agent on this date
+    const planned=getPlannedShift(agent.id,date);
+    const shiftDef=planned?shMap[planned]:null;
+    const expectedHrs=shiftDef?shiftDef.dur/60:9;
+    
+    // Parse Genesys data (all in seconds)
+    const loggedIn=(row["Logged In"]||0);
+    const onQueue=(row["On Queue"]||0);
+    const idle=(row["Idle"]||0);
+    const available=(row["Available"]||0);
+    const away=(row["Away"]||0);
+    const brk=(row["Break"]||0);
+    const meal=(row["Meal"]||0);
+    const notResp=(row["Not Responding"]||0);
+    
+    // Login hours
+    const loginHours=loggedIn/3600;
+    
+    // Parse login/logout times
+    const actualLogin=parseTime(row["Log In"]);
+    const actualLogout=parseTime(row["Log Out"]);
+    const plannedLogin=shiftDef?minsToTime(shiftDef.s):null;
+    const plannedLogout=shiftDef?minsToTime(shiftDef.e%1440):null;
+    
+    // Calculate deviations
+    const grace=D.settings.graceMin||5;
+    let lateMin=0,earlyMin=0,excessBreak=0,excessMeal=0,awayUnapp=0;
+    
+    if(actualLogin&&plannedLogin&&planned&&!NW2.has(planned)){
+      const diff=timeDiffMin(plannedLogin,actualLogin);
+      lateMin=diff>grace?diff:0;
+    }
+    if(actualLogout&&plannedLogout&&planned&&!NW2.has(planned)){
+      const diff=timeDiffMin(actualLogout,plannedLogout);
+      earlyMin=diff>0?diff:0;
+    }
+    
+    const breakAllow=(D.settings.breakAllow||15)*60;
+    const mealAllow=(D.settings.mealAllow||30)*60;
+    excessBreak=Math.max(0,(brk-breakAllow)/60);
+    excessMeal=Math.max(0,(meal-mealAllow)/60);
+    
+    // Away without approval
+    const approvedAway=getApprovedMinutes(agent.id,date,"away");
+    awayUnapp=Math.max(0,away/60-approvedAway);
+    if(awayUnapp<(D.settings.awayThresh||15))awayUnapp=0;
+    
+    const missingMin=lateMin+earlyMin+excessBreak+excessMeal+awayUnapp;
+    const adherence=expectedHrs>0?Math.max(0,(expectedHrs*60-missingMin)/(expectedHrs*60)):1;
+    const hoursDeficit=Math.max(0,expectedHrs-loginHours);
+    
+    const rec={
+      agentId:agent.id,agentName:agent.name,date,shift:planned||"?",
+      loginHours:Math.round(loginHours*100)/100,
+      expectedHours:Math.round(expectedHrs*100)/100,
+      hoursDeficit:Math.round(hoursDeficit*100)/100,
+      loggedInSec:loggedIn,onQueueSec:onQueue,idleSec:idle,availableSec:available,
+      awaySec:away,breakSec:brk,mealSec:meal,notRespondingSec:notResp,
+      actualLogin:actualLogin||"",actualLogout:actualLogout||"",
+      lateMin:Math.round(lateMin*10)/10,earlyMin:Math.round(earlyMin*10)/10,
+      excessBreak:Math.round(excessBreak*10)/10,excessMeal:Math.round(excessMeal*10)/10,
+      awayUnapproved:Math.round(awayUnapp*10)/10,missingMin:Math.round(missingMin*10)/10,
+      adherence:Math.round(adherence*1000)/1000
+    };
+    
+    // Replace existing record for same agent+date
+    const existIdx=D.attendance[month].findIndex(r=>r.agentId===agent.id&&r.date===date);
+    if(existIdx>=0)D.attendance[month][existIdx]=rec;
+    else D.attendance[month].push(rec);
+    
+    newRecords.push(rec);
+    matched++;
+    
+    // Generate red flags
+    const agentFlags=generateRedFlags(rec,agent);
+    agentFlags.forEach(f=>newFlags.push(f));
+    flags+=agentFlags.length;
+    
+    processed++;
+  });
+  
+  // Calculate MTD
+  calculateMTD(month);
+  
+  // Merge new flags (replace old flags for same date)
+  const dates=new Set(newRecords.map(r=>r.date));
+  D.redFlags=D.redFlags.filter(f=>!dates.has(f.date));
+  D.redFlags.push(...newFlags);
+  
+  save();
+  uploadLog(`✅ Processed ${processed} records, ${matched} matched, ${flags} flags generated`,"ok");
+  document.getElementById("dzAttLast").textContent=`Last: ${new Date().toLocaleString()}`;
+  updateFlagBadge();
+  renderUploadPreview(newRecords);
+}
+
+function guessMonth(rows){
+  for(const row of rows){
+    const v=row["Interval Start"]||row["Date"];
+    if(v){
+      const d=new Date(v);
+      if(!isNaN(d))return d.toISOString().slice(0,7);
+    }
+  }
+  return monthStr();
+}
+
+function parseIntervalDate(v){
+  if(!v)return null;
+  const d=new Date(v);
+  if(isNaN(d))return null;
+  return d.toISOString().split("T")[0];
+}
+
+function parseTime(v){
+  if(!v)return null;
+  const d=new Date(v);
+  if(isNaN(d))return null;
+  return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+}
+
+function minsToTime(m){
+  const h=Math.floor(m/60)%24;
+  const mm=m%60;
+  return String(h).padStart(2,"0")+":"+String(mm).padStart(2,"0");
+}
+
+function timeDiffMin(t1,t2){
+  // t1, t2 are "HH:MM" strings. Returns (t2 - t1) in minutes
+  const[h1,m1]=t1.split(":").map(Number);
+  const[h2,m2]=t2.split(":").map(Number);
+  let d=(h2*60+m2)-(h1*60+m1);
+  if(d<-720)d+=1440; // handle midnight wrap
+  return d;
+}
+
+function matchAgent(name){
+  if(!name)return null;
+  const n=name.trim().toLowerCase();
+  return D.agents.find(a=>a.name.toLowerCase()===n||(a.genesysAlias&&a.genesysAlias.toLowerCase()===n));
+}
+
+function getPlannedShift(agentId,date){
+  if(!D.roster)return null;
+  const d=new Date(date+"T12:00:00");
+  const dayName=DAYS[((d.getDay()+6)%7)]; // Mon=0
+  const r=D.roster.find(r=>r.id===agentId);
+  if(r&&r.shifts&&r.shifts[dayName])return r.shifts[dayName];
+  // Check AL
+  const al=D.al.find(a=>a.aid===agentId&&date>=a.start&&date<=a.end&&(a.status==="Approved"||a.status==="Ongoing"));
+  if(al)return"AL";
+  return null;
+}
+
+function getApprovedMinutes(agentId,date,type){
+  return(D.approvals||[]).filter(a=>a.agentId===agentId&&a.date===date&&a.type===type&&a.approved).reduce((s,a)=>s+(a.minutes||0),0);
+}
+
+// ═══ RED FLAG ENGINE ═══
+function generateRedFlags(rec,agent){
+  const flags=[];
+  const add=(type,sev,msg,val,thresh)=>{
+    flags.push({id:uid(),agentId:rec.agentId,agentName:rec.agentName,date:rec.date,type,severity:sev,message:msg,value:val,threshold:thresh,status:"open",createdAt:new Date().toISOString()});
+  };
+  
+  const isWork=rec.shift&&!NW2.has(rec.shift);
+  
+  if(isWork){
+    // Late login
+    if(rec.lateMin>30)add("severe_late","crit",`${rec.agentName} severely late: ${rec.lateMin}min`,rec.lateMin,30);
+    else if(rec.lateMin>5)add("late","warn",`${rec.agentName} late: ${rec.lateMin}min`,rec.lateMin,5);
+    
+    // Early logout
+    if(rec.earlyMin>30)add("severe_early","crit",`${rec.agentName} left ${rec.earlyMin}min early`,rec.earlyMin,30);
+    else if(rec.earlyMin>10)add("early","warn",`${rec.agentName} left ${rec.earlyMin}min early`,rec.earlyMin,10);
+    
+    // Excess break
+    if(rec.excessBreak>5)add("excess_break","warn",`${rec.agentName} break exceeded by ${rec.excessBreak.toFixed(1)}min`,rec.excessBreak,5);
+    
+    // Excess meal
+    if(rec.excessMeal>10)add("excess_meal","warn",`${rec.agentName} meal exceeded by ${rec.excessMeal.toFixed(1)}min`,rec.excessMeal,10);
+    
+    // Away without approval
+    if(rec.awayUnapproved>15)add("away_unapp","crit",`${rec.agentName} away ${rec.awayUnapproved.toFixed(0)}min without approval`,rec.awayUnapproved,15);
+    
+    // Missing minutes
+    if(rec.missingMin>120)add("missing_severe","severe",`${rec.agentName} missing ${rec.missingMin.toFixed(0)}min — escalation needed`,rec.missingMin,120);
+    else if(rec.missingMin>60)add("missing_high","crit",`${rec.agentName} missing ${rec.missingMin.toFixed(0)}min`,rec.missingMin,60);
+    
+    // Adherence
+    if(rec.adherence<0.70)add("adh_very_low","crit",`${rec.agentName} adherence ${(rec.adherence*100).toFixed(1)}%`,rec.adherence,0.70);
+    else if(rec.adherence<0.85)add("adh_low","warn",`${rec.agentName} adherence ${(rec.adherence*100).toFixed(1)}%`,rec.adherence,0.85);
+    
+    // Login hours
+    if(rec.loginHours<4&&rec.loginHours>0)add("minimal_login","severe",`${rec.agentName} only ${rec.loginHours.toFixed(1)}h logged in`,rec.loginHours,4);
+    else if(rec.hoursDeficit>2)add("very_short_day","crit",`${rec.agentName} ${rec.hoursDeficit.toFixed(1)}h short of expected`,rec.hoursDeficit,2);
+    else if(rec.hoursDeficit>1)add("short_day","warn",`${rec.agentName} ${rec.hoursDeficit.toFixed(1)}h short of expected`,rec.hoursDeficit,1);
+    
+    // No login
+    if(rec.loginHours===0||rec.loggedInSec===0)add("no_login","severe",`${rec.agentName} no login on working day (shift ${rec.shift})`,0,0);
+    
+    // Excessive hours (OT check)
+    if(rec.loginHours>12)add("excessive_hours","info",`${rec.agentName} logged ${rec.loginHours.toFixed(1)}h — check OT approval`,rec.loginHours,12);
+    
+    // Not Responding
+    if(rec.notRespondingSec>300)add("not_responding","warn",`${rec.agentName} not responding ${(rec.notRespondingSec/60).toFixed(0)}min total`,rec.notRespondingSec/60,5);
+    
+    // Low On Queue %
+    if(rec.loggedInSec>0&&rec.onQueueSec/rec.loggedInSec<0.50)add("low_onqueue","warn",`${rec.agentName} on queue only ${(rec.onQueueSec/rec.loggedInSec*100).toFixed(0)}%`,rec.onQueueSec/rec.loggedInSec,0.50);
+  } else {
+    // Ghost login on OFF/AL/PH
+    if(rec.loginHours>0.5)add("ghost_login","info",`${rec.agentName} logged ${rec.loginHours.toFixed(1)}h on ${rec.shift} day`,rec.loginHours,0);
+  }
+  
+  // Unaccounted gap
+  if(isWork&&rec.loginHours>0){
+    const hoursDeficitMin=rec.hoursDeficit*60;
+    if(hoursDeficitMin>rec.missingMin+15){
+      add("unaccounted_gap","warn",`${rec.agentName} has ${(hoursDeficitMin-rec.missingMin).toFixed(0)}min unaccounted gap`,hoursDeficitMin-rec.missingMin,15);
+    }
+  }
+  
+  return flags;
+}
+
+// ═══ MTD CALCULATION ═══
+function calculateMTD(month){
+  const recs=D.attendance[month]||[];
+  if(!recs.length)return;
+  const byAgent={};
+  recs.forEach(r=>{
+    if(!byAgent[r.agentId])byAgent[r.agentId]={agentId:r.agentId,agentName:r.agentName,loginHours:0,expectedHours:0,workingDays:0,dates:new Set()};
+    const a=byAgent[r.agentId];
+    if(r.shift&&!NW2.has(r.shift)&&!a.dates.has(r.date)){
+      a.loginHours+=r.loginHours;
+      a.expectedHours+=r.expectedHours;
+      a.workingDays++;
+      a.dates.add(r.date);
+    }
+  });
+  // Store MTD
+  D.mtd=D.mtd||{};
+  D.mtd[month]=Object.values(byAgent).map(a=>({
+    agentId:a.agentId,agentName:a.agentName,month,
+    mtdLoginHours:Math.round(a.loginHours*100)/100,
+    mtdExpectedHours:Math.round(a.expectedHours*100)/100,
+    mtdWorkingDays:a.workingDays,
+    mtdHoursDeficit:Math.round(Math.max(0,a.expectedHours-a.loginHours)*100)/100,
+    mtdHoursRatio:a.expectedHours>0?Math.round(a.loginHours/a.expectedHours*1000)/1000:1,
+    mtdAvgDailyHours:a.workingDays>0?Math.round(a.loginHours/a.workingDays*100)/100:0
+  }));
+  
+  // MTD red flags
+  (D.mtd[month]||[]).forEach(m=>{
+    if(m.mtdHoursRatio<0.80)D.redFlags.push({id:uid(),agentId:m.agentId,agentName:m.agentName,date:month,type:"mtd_hours_crit",severity:"crit",message:`${m.agentName} MTD hours at ${(m.mtdHoursRatio*100).toFixed(0)}% of expected`,value:m.mtdHoursRatio,threshold:0.80,status:"open",createdAt:new Date().toISOString()});
+    else if(m.mtdHoursRatio<0.90)D.redFlags.push({id:uid(),agentId:m.agentId,agentName:m.agentName,date:month,type:"mtd_hours_warn",severity:"warn",message:`${m.agentName} MTD hours at ${(m.mtdHoursRatio*100).toFixed(0)}% of expected`,value:m.mtdHoursRatio,threshold:0.90,status:"open",createdAt:new Date().toISOString()});
+    if(m.mtdAvgDailyHours<7&&m.mtdWorkingDays>=3)D.redFlags.push({id:uid(),agentId:m.agentId,agentName:m.agentName,date:month,type:"mtd_avg_low",severity:"crit",message:`${m.agentName} avg ${m.mtdAvgDailyHours.toFixed(1)}h/day`,value:m.mtdAvgDailyHours,threshold:7,status:"open",createdAt:new Date().toISOString()});
+  });
+}
+
+// ═══ AHT UPLOAD ═══
+function processAHTUpload(rows){
+  const month=guessMonth(rows);
+  if(!D.kpis[month])D.kpis[month]=[];
+  let count=0;
+  rows.forEach(row=>{
+    const agent=matchAgent(row["Agent Name"]);
+    if(!agent)return;
+    const rec={agentId:agent.id,agentName:agent.name,answered:row["Answered"]||0,handle:row["Handle"]||0,avgHandle:row["Avg Handle"]||0,avgTalk:row["Avg Talk"]||0,avgHold:row["Avg Hold"]||0,avgACW:row["Avg ACW"]||0,held:row["Held"]||0,transferred:row["Transferred"]||0};
+    const idx=D.kpis[month].findIndex(r=>r.agentId===agent.id);
+    if(idx>=0)Object.assign(D.kpis[month][idx],rec);
+    else D.kpis[month].push(rec);
+    count++;
+  });
+  save();
+  uploadLog(`✅ AHT: ${count} agents processed for ${month}`,"ok");
+  document.getElementById("dzAHTLast").textContent=`Last: ${new Date().toLocaleString()}`;
+}
+
+// ═══ QA UPLOAD ═══
+function processQAUpload(rows){
+  const month=monthStr();
+  if(!D.qa[month])D.qa[month]=[];
+  let count=0;
+  rows.forEach(row=>{
+    const name=row["Agent Name"];
+    const agent=matchAgent(name);
+    if(!agent)return;
+    const rec={agentId:agent.id,agentName:agent.name,qaScore:row["QA Score"]||0,callsMonitored:row["No of Calls Monitored"]||0};
+    const idx=D.qa[month].findIndex(r=>r.agentId===agent.id);
+    if(idx>=0)Object.assign(D.qa[month][idx],rec);
+    else D.qa[month].push(rec);
+    count++;
+  });
+  save();
+  uploadLog(`✅ QA: ${count} agents processed`,"ok");
+  document.getElementById("dzQALast").textContent=`Last: ${new Date().toLocaleString()}`;
+}
+
+// ═══ TRANSFER/CSAT UPLOAD ═══
+function processTransferUpload(rows){
+  const month=monthStr();
+  if(!D.kpis[month])D.kpis[month]=[];
+  let count=0;
+  rows.forEach(row=>{
+    const name=row["Agent Name"];
+    const agent=matchAgent(name);
+    if(!agent)return;
+    const idx=D.kpis[month].findIndex(r=>r.agentId===agent.id);
+    const update={transferRate:row["Transfer Rate"]||null,csat:row["CSAT"]||null,agentCsat:row["Agent CSAT"]||null};
+    if(idx>=0)Object.assign(D.kpis[month][idx],update);
+    else D.kpis[month].push({agentId:agent.id,agentName:agent.name,...update});
+    count++;
+  });
+  save();
+  uploadLog(`✅ Transfer/CSAT: ${count} agents processed`,"ok");
+  document.getElementById("dzTransLast").textContent=`Last: ${new Date().toLocaleString()}`;
+}
+
+function renderUploadPreview(records){
+  const el=document.getElementById("uploadPreview");
+  el.style.display="block";
+  const pc=document.getElementById("uploadPreviewContent");
+  if(!records.length){pc.innerHTML='<div class="emp">No records</div>';return}
+  let h='<div class="tw"><table><thead><tr><th>Agent</th><th>Date</th><th>Shift</th><th>Login Hrs</th><th>Expected</th><th>Late</th><th>Early</th><th>Excess Brk</th><th>Away</th><th>Missing</th><th>Adherence</th></tr></thead><tbody>';
+  records.sort((a,b)=>b.missingMin-a.missingMin).forEach(r=>{
+    const adhC=r.adherence>=0.90?"var(--grn)":r.adherence>=0.80?"var(--orn)":"var(--red)";
+    const hrsC=r.hoursDeficit>1?"var(--red)":r.hoursDeficit>0.5?"var(--orn)":"var(--grn)";
+    h+=`<tr><td>${r.agentName.split(" ").slice(0,2).join(" ")}</td><td style="font-family:var(--mono);font-size:10px">${r.date}</td><td><span class="sb" style="background:${sColor(r.shift)}">${r.shift}</span></td><td style="color:${hrsC};font-family:var(--mono)">${r.loginHours.toFixed(1)}h</td><td style="font-family:var(--mono)">${r.expectedHours.toFixed(1)}h</td><td style="color:${r.lateMin>0?'var(--red)':'var(--tx3)'}"><b>${r.lateMin>0?r.lateMin.toFixed(0)+'m':'—'}</b></td><td style="color:${r.earlyMin>0?'var(--red)':'var(--tx3)'}"><b>${r.earlyMin>0?r.earlyMin.toFixed(0)+'m':'—'}</b></td><td style="color:${r.excessBreak>0?'var(--orn)':'var(--tx3)'}"><b>${r.excessBreak>0?r.excessBreak.toFixed(0)+'m':'—'}</b></td><td style="color:${r.awayUnapproved>0?'var(--red)':'var(--tx3)'}"><b>${r.awayUnapproved>0?r.awayUnapproved.toFixed(0)+'m':'—'}</b></td><td style="color:${r.missingMin>60?'var(--red)':r.missingMin>30?'var(--orn)':'var(--grn)'};font-weight:700">${r.missingMin.toFixed(0)}m</td><td style="color:${adhC};font-weight:700">${(r.adherence*100).toFixed(1)}%</td></tr>`;
+  });
+  h+='</tbody></table></div>';
+  pc.innerHTML=h;
+}
+
+function updateFlagBadge(){
+  const open=D.redFlags.filter(f=>f.status==="open"&&f.severity!=="info").length;
+  document.getElementById("bFlags").textContent=open;
+  document.getElementById("bFlags").style.display=open>0?"":"none";
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════════════
+function renderDashboard(){
+  const today=todayStr();
+  const month=monthStr();
+  document.getElementById("dashDate").textContent=new Date().toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+  
+  // Stats
+  const recs=(D.attendance[month]||[]).filter(r=>r.date===today);
+  const mtd=D.mtd&&D.mtd[month]?D.mtd[month]:[];
+  const totalAgents=D.agents.length;
+  const onShift=D.roster?D.roster.filter(r=>{const d=DAYS[((new Date(today+"T12:00:00").getDay()+6)%7)];return r.shifts&&r.shifts[d]&&!NW2.has(r.shifts[d])}).length:0;
+  const openFlags=D.redFlags.filter(f=>f.status==="open"&&f.severity!=="info").length;
+  const avgAdh=recs.length?recs.reduce((s,r)=>s+r.adherence,0)/recs.length:0;
+  const totalLoginHrs=mtd.reduce((s,m)=>s+m.mtdLoginHours,0);
+  const belowTarget=mtd.filter(m=>m.mtdHoursRatio<0.90).length;
+  
+  document.getElementById("dashStats").innerHTML=[
+    {l:"Total Agents",v:totalAgents,c:"var(--acc)"},
+    {l:"On Shift Today",v:onShift,c:"var(--grn)"},
+    {l:"Red Flags",v:openFlags,c:openFlags?"var(--red)":"var(--grn)"},
+    {l:"Avg Adherence",v:recs.length?(avgAdh*100).toFixed(0)+"%":"—",c:avgAdh>=0.90?"var(--grn)":avgAdh>=0.80?"var(--orn)":"var(--red)"},
+    {l:"MTD Team Hours",v:totalLoginHrs?totalLoginHrs.toFixed(0)+"h":"—",c:"var(--cyn)"},
+    {l:"Below Target",v:belowTarget,c:belowTarget?"var(--red)":"var(--grn)"}
+  ].map(s=>`<div class="stat-card" style="--stat-accent:${s.c}"><div class="sl">${s.l}</div><div class="sv" style="color:${s.c}">${s.v}</div></div>`).join("");
+  
+  // Red flags
+  const todayFlags=D.redFlags.filter(f=>f.status==="open"&&f.date===today).slice(0,8);
+  document.getElementById("dashFlagCount").textContent=todayFlags.length+" open";
+  document.getElementById("dashFlags").innerHTML=todayFlags.length?todayFlags.map(f=>`<div class="rf sev-${f.severity}"><span class="tg" style="font-size:8px">${f.severity.toUpperCase()}</span><span style="flex:1">${f.message}</span><button class="btn bs bsm" onclick="resolveFlag('${f.id}')">✓</button></div>`).join(""):'<div class="emp">No flags for today</div>';
+  
+  // MTD hours
+  const el=document.getElementById("dashMTD");
+  if(mtd.length){
+    const sorted=[...mtd].sort((a,b)=>a.mtdHoursRatio-b.mtdHoursRatio);
+    el.innerHTML='<div style="max-height:200px;overflow-y:auto">'+sorted.slice(0,10).map(m=>{
+      const pct=Math.min(100,m.mtdHoursRatio*100);
+      const c=pct>=95?"var(--grn)":pct>=85?"var(--orn)":"var(--red)";
+      return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="min-width:120px;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.agentName.split(" ").slice(0,2).join(" ")}</span><div style="flex:1;background:var(--s3);border-radius:4px;height:16px;overflow:hidden"><div style="width:${pct}%;background:${c};height:100%;border-radius:4px;transition:width .3s"></div></div><span style="font-family:var(--mono);font-size:10px;min-width:50px;color:${c}">${m.mtdLoginHours.toFixed(0)}h</span><span style="font-family:var(--mono);font-size:9px;color:var(--tx3)">${pct.toFixed(0)}%</span></div>`;
+    }).join("")+'</div>';
+  }
+  
+  // Today's shifts
+  renderDashShifts();
+  renderDashLeave();
+}
+
+function renderDashShifts(){
+  const el=document.getElementById("dashShifts");
+  if(!D.roster){el.innerHTML='<div class="emp">Generate schedule first</div>';return}
+  const dayIdx=(new Date().getDay()+6)%7;
+  const day=DAYS[dayIdx];
+  const counts={};
+  D.roster.forEach(r=>{const s=r.shifts[day];counts[s]=(counts[s]||0)+1});
+  el.innerHTML=Object.entries(counts).map(([s,c])=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span class="sb" style="background:${sColor(s)};min-width:42px">${s}</span><span style="font-family:var(--mono);font-weight:700">${c}</span></div>`).join("");
+}
+
+function renderDashLeave(){
+  const el=document.getElementById("dashLeave");
+  const today=new Date();
+  const upcoming=D.al.filter(a=>{
+    if(a.status==="Rejected"||a.status==="Completed")return false;
+    const d=new Date(a.start+"T00:00:00");
+    const diff=Math.round((d-today)/86400000);
+    return diff>=0&&diff<=7;
+  }).slice(0,5);
+  el.innerHTML=upcoming.length?upcoming.map(a=>`<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:11px"><span class="tg" style="background:${a.status==="Pending"?"#78350f":"#064e3b"};color:${a.status==="Pending"?"#fcd34d":"#6ee7b7"}">${a.status}</span><b>${a.name.split(" ")[0]}</b><span style="font-family:var(--mono);color:var(--tx3);font-size:10px">${a.start}</span></div>`).join(""):'<div class="emp" style="padding:8px">No upcoming leave</div>';
+}
+
+function resolveFlag(id){
+  const f=D.redFlags.find(x=>x.id===id);
+  if(f){f.status="resolved";f.resolvedAt=new Date().toISOString();save();updateFlagBadge();renderDashboard()}
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FLOOR CONTROL
+// ═══════════════════════════════════════════════════════════════
+function renderFloor(){
+  const today=todayStr();
+  const month=monthStr();
+  const dayIdx=(new Date().getDay()+6)%7;
+  const day=DAYS[dayIdx];
+  const filter=document.getElementById("floorShiftFilter").value;
+  
+  // Populate shift filter
+  const sel=document.getElementById("floorShiftFilter");
+  if(sel.options.length<=1){
+    D.shifts.forEach(s=>{const o=document.createElement("option");o.value=s.id;o.textContent=s.id+" — "+s.name;sel.appendChild(o)});
+  }
+  
+  if(!D.roster){document.getElementById("floorGrid").innerHTML='<div class="emp">Generate a schedule first</div>';return}
+  
+  const agents=D.roster.filter(r=>{
+    const s=r.shifts[day];
+    if(!s||NW2.has(s))return false;
+    if(filter!=="all"&&s!==filter)return false;
+    return true;
+  });
+  
+  const attMap={};
+  (D.attendance[month]||[]).filter(r=>r.date===today).forEach(r=>attMap[r.agentId]=r);
+  
+  // Stats
+  let onQueue=0,available=0,away=0,onBreak=0,absent=0;
+  agents.forEach(a=>{
+    const att=attMap[a.id];
+    if(!att||att.loginHours===0){absent++;return}
+    if(att.onQueueSec>att.availableSec&&att.onQueueSec>att.awaySec)onQueue++;
+    else if(att.availableSec>att.awaySec)available++;
+    else away++;
+  });
+  
+  document.getElementById("floorStats").innerHTML=[
+    {l:"On Shift",v:agents.length,c:"var(--acc)"},
+    {l:"On Queue",v:onQueue,c:"var(--grn)"},
+    {l:"Available",v:available,c:"var(--cyn)"},
+    {l:"Away/Break",v:away,c:"var(--orn)"},
+    {l:"Absent/No Login",v:absent,c:"var(--red)"}
+  ].map(s=>`<div class="stat-card" style="--stat-accent:${s.c}"><div class="sl">${s.l}</div><div class="sv" style="color:${s.c}">${s.v}</div></div>`).join("");
+  
+  // Agent grid
+  document.getElementById("floorGrid").innerHTML=agents.map(a=>{
+    const att=attMap[a.id];
+    const shift=a.shifts[day];
+    let statusColor="var(--tx3)",statusText="No Data";
+    if(att){
+      if(att.loginHours===0){statusColor="var(--red)";statusText="ABSENT"}
+      else if(att.onQueueSec>att.availableSec){statusColor="var(--grn)";statusText="On Queue"}
+      else if(att.availableSec>att.awaySec){statusColor="var(--cyn)";statusText="Available"}
+      else{statusColor="var(--orn)";statusText="Away"}
+    }
+    const flags=(D.redFlags||[]).filter(f=>f.agentId===a.id&&f.date===today&&f.status==="open").length;
+    return`<div class="fc-agent" style="border-left-color:${statusColor}"><div class="fc-name">${a.name.split(" ").slice(0,2).join(" ")}${flags?` <span style="color:var(--red);font-size:10px">🚩${flags}</span>`:""}</div><div class="fc-meta"><span class="sb" style="background:${sColor(shift)};height:18px;font-size:9px;min-width:28px">${shift}</span> <span style="color:${statusColor};font-weight:600">${statusText}</span></div>${att?`<div class="fc-meta" style="margin-top:2px">Login: ${att.loginHours.toFixed(1)}h | Adh: ${(att.adherence*100).toFixed(0)}%</div>`:""}</div>`;
+  }).join("")||'<div class="emp">No agents on this shift today</div>';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ATTENDANCE PAGE
+// ═══════════════════════════════════════════════════════════════
+function renderAttendance(){
+  const sel=document.getElementById("attMonth");
+  if(!sel.options.length){
+    const months=Object.keys(D.attendance||{}).sort().reverse();
+    if(!months.length)months.push(monthStr());
+    months.forEach(m=>{const o=document.createElement("option");o.value=m;o.textContent=m;sel.appendChild(o)});
+  }
+  const month=sel.value||monthStr();
+  const recs=D.attendance[month]||[];
+  const mtd=D.mtd&&D.mtd[month]?D.mtd[month]:[];
+  
+  if(!recs.length){document.getElementById("attArea").innerHTML='<div class="emp">No attendance data for '+month+'. Upload Genesys Agent Status export.</div>';document.getElementById("attStats").innerHTML="";return}
+  
+  // Stats
+  const avgAdh=recs.reduce((s,r)=>s+r.adherence,0)/recs.length;
+  const avgHrs=recs.filter(r=>!NW2.has(r.shift)).reduce((s,r)=>s+r.loginHours,0)/(recs.filter(r=>!NW2.has(r.shift)).length||1);
+  const totalFlags=D.redFlags.filter(f=>f.date.startsWith(month)&&f.status==="open").length;
+  
+  document.getElementById("attStats").innerHTML=[
+    {l:"Records",v:recs.length,c:"var(--acc)"},
+    {l:"Avg Adherence",v:(avgAdh*100).toFixed(1)+"%",c:avgAdh>=0.90?"var(--grn)":"var(--red)"},
+    {l:"Avg Login Hours",v:avgHrs.toFixed(1)+"h",c:avgHrs>=8.5?"var(--grn)":"var(--orn)"},
+    {l:"Agents Tracked",v:new Set(recs.map(r=>r.agentId)).size,c:"var(--cyn)"},
+    {l:"Open Flags",v:totalFlags,c:totalFlags?"var(--red)":"var(--grn)"}
+  ].map(s=>`<div class="stat-card" style="--stat-accent:${s.c}"><div class="sl">${s.l}</div><div class="sv" style="color:${s.c}">${s.v}</div></div>`).join("");
+  
+  // MTD table
+  let h='<div class="card"><div class="ch"><h3>📊 MTD Login Hours by Agent</h3></div><div class="cb"><div class="tw"><table><thead><tr><th>Agent</th><th>Working Days</th><th>Login Hours</th><th>Expected</th><th>Deficit</th><th>Ratio</th><th>Avg/Day</th></tr></thead><tbody>';
+  const sorted=[...mtd].sort((a,b)=>a.mtdHoursRatio-b.mtdHoursRatio);
+  sorted.forEach(m=>{
+    const rc=m.mtdHoursRatio>=0.95?"var(--grn)":m.mtdHoursRatio>=0.85?"var(--orn)":"var(--red)";
+    h+=`<tr><td>${m.agentName.split(" ").slice(0,2).join(" ")}</td><td style="font-family:var(--mono)">${m.mtdWorkingDays}</td><td style="font-family:var(--mono);font-weight:700">${m.mtdLoginHours.toFixed(1)}h</td><td style="font-family:var(--mono)">${m.mtdExpectedHours.toFixed(0)}h</td><td style="font-family:var(--mono);color:${m.mtdHoursDeficit>0?'var(--red)':'var(--grn)'}">${m.mtdHoursDeficit>0?m.mtdHoursDeficit.toFixed(1)+'h':'✓'}</td><td style="font-family:var(--mono);font-weight:700;color:${rc}">${(m.mtdHoursRatio*100).toFixed(1)}%</td><td style="font-family:var(--mono)">${m.mtdAvgDailyHours.toFixed(1)}h</td></tr>`;
+  });
+  h+='</tbody></table></div></div></div>';
+  
+  // Daily records (last 7 days)
+  const dates=[...new Set(recs.map(r=>r.date))].sort().reverse().slice(0,7);
+  h+='<div class="card"><div class="ch"><h3>📋 Daily Attendance Records</h3></div><div class="cb"><div class="tw"><table><thead><tr><th>Agent</th><th>Date</th><th>Shift</th><th>Login Hrs</th><th>Late</th><th>Early</th><th>Missing</th><th>Adherence</th></tr></thead><tbody>';
+  recs.filter(r=>dates.includes(r.date)).sort((a,b)=>b.date.localeCompare(a.date)||b.missingMin-a.missingMin).slice(0,100).forEach(r=>{
+    const ac=r.adherence>=0.90?"var(--grn)":r.adherence>=0.80?"var(--orn)":"var(--red)";
+    const hc=r.hoursDeficit>1?"var(--red)":r.hoursDeficit>0.5?"var(--orn)":"var(--grn)";
+    h+=`<tr><td>${r.agentName.split(" ").slice(0,2).join(" ")}</td><td style="font-family:var(--mono);font-size:10px">${r.date}</td><td><span class="sb" style="background:${sColor(r.shift)}">${r.shift||"?"}</span></td><td style="font-family:var(--mono);color:${hc};font-weight:700">${r.loginHours.toFixed(1)}h</td><td style="color:${r.lateMin>0?'var(--red)':'var(--tx3)'}"><b>${r.lateMin>0?r.lateMin.toFixed(0)+'m':'—'}</b></td><td style="color:${r.earlyMin>0?'var(--red)':'var(--tx3)'}"><b>${r.earlyMin>0?r.earlyMin.toFixed(0)+'m':'—'}</b></td><td style="color:${r.missingMin>60?'var(--red)':r.missingMin>30?'var(--orn)':'var(--grn)'};font-weight:700">${r.missingMin.toFixed(0)}m</td><td style="color:${ac};font-weight:700">${(r.adherence*100).toFixed(1)}%</td></tr>`;
+  });
+  h+='</tbody></table></div></div></div>';
+  document.getElementById("attArea").innerHTML=h;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RED FLAGS PAGE
+// ═══════════════════════════════════════════════════════════════
+function renderRedFlags(){
+  const sevFilter=document.getElementById("rfFilter").value;
+  const agFilter=document.getElementById("rfAgent").value;
+  // Populate agent filter
+  const sel=document.getElementById("rfAgent");
+  if(sel.options.length<=1){D.agents.forEach(a=>{const o=document.createElement("option");o.value=a.id;o.textContent=a.name.split(" ").slice(0,2).join(" ");sel.appendChild(o)})}
+  
+  let flags=D.redFlags.filter(f=>f.status==="open");
+  if(sevFilter!=="all")flags=flags.filter(f=>f.severity===sevFilter);
+  if(agFilter!=="all")flags=flags.filter(f=>f.agentId===agFilter);
+  flags.sort((a,b)=>{const so={severe:0,crit:1,warn:2,info:3};return(so[a.severity]||9)-(so[b.severity]||9)||b.date.localeCompare(a.date)});
+  
+  if(!flags.length){document.getElementById("rfList").innerHTML='<div class="emp">No open flags matching filter</div>';return}
+  
+  document.getElementById("rfList").innerHTML=flags.map(f=>`<div class="rf sev-${f.severity}"><span class="tg" style="font-size:8px;min-width:50px;text-align:center">${f.severity.toUpperCase()}</span><span style="font-family:var(--mono);font-size:10px;color:var(--tx3);min-width:75px">${f.date}</span><span style="flex:1">${f.message}</span><button class="btn bs bsm" onclick="resolveFlag('${f.id}');renderRedFlags()">✓ Resolve</button><button class="btn bd bsm" onclick="dismissFlag('${f.id}');renderRedFlags()">✕</button></div>`).join("");
+}
+
+function dismissFlag(id){const f=D.redFlags.find(x=>x.id===id);if(f){f.status="dismissed";save();updateFlagBadge()}}
+function exportRedFlags(){
+  const flags=D.redFlags.filter(f=>f.status==="open");
+  const csv="Date,Agent,Type,Severity,Message,Value,Threshold\n"+flags.map(f=>`${f.date},"${f.agentName}",${f.type},${f.severity},"${f.message}",${f.value},${f.threshold}`).join("\n");
+  dl(new Blob([csv],{type:"text/csv"}),"red_flags_"+todayStr()+".csv");
+  toast("Exported "+flags.length+" flags");
+}
+
+// ═══════════════════════════════════════════════════════════════
+// KPIs PAGE
+// ═══════════════════════════════════════════════════════════════
+function renderKPIs(){
+  const sel=document.getElementById("kpiMonth");
+  if(!sel.options.length){
+    const months=Object.keys(D.kpis||{}).sort().reverse();
+    if(!months.length)months.push(monthStr());
+    months.forEach(m=>{const o=document.createElement("option");o.value=m;o.textContent=m;sel.appendChild(o)});
+  }
+  const month=sel.value||monthStr();
+  const data=D.kpis[month]||[];
+  const qa=D.qa[month]||[];
+  
+  if(!data.length&&!qa.length){document.getElementById("kpiArea").innerHTML='<div class="emp">No KPI data for '+month+'. Upload AHT/Performance export.</div>';return}
+  
+  // Merge KPI + QA
+  const merged={};
+  data.forEach(r=>{merged[r.agentId]={...r}});
+  qa.forEach(r=>{if(merged[r.agentId])Object.assign(merged[r.agentId],{qaScore:r.qaScore,callsMonitored:r.callsMonitored});else merged[r.agentId]={...r}});
+  
+  const rows=Object.values(merged).sort((a,b)=>(b.avgHandle||0)-(a.avgHandle||0));
+  let h='<div class="tw"><table><thead><tr><th>Agent</th><th>Answered</th><th>Handle</th><th>Avg Handle</th><th>Avg Talk</th><th>Avg Hold</th><th>Avg ACW</th><th>Transfer Rate</th><th>CSAT</th><th>QA Score</th></tr></thead><tbody>';
+  rows.forEach(r=>{
+    const ahtC=(r.avgHandle||0)>300?"var(--red)":(r.avgHandle||0)>240?"var(--orn)":"var(--grn)";
+    h+=`<tr><td>${(r.agentName||"").split(" ").slice(0,2).join(" ")}</td><td style="font-family:var(--mono)">${r.answered||"—"}</td><td style="font-family:var(--mono)">${r.handle||"—"}</td><td style="font-family:var(--mono);color:${ahtC};font-weight:700">${r.avgHandle?r.avgHandle.toFixed(0)+"s":"—"}</td><td style="font-family:var(--mono)">${r.avgTalk?r.avgTalk.toFixed(0)+"s":"—"}</td><td style="font-family:var(--mono)">${r.avgHold?r.avgHold.toFixed(0)+"s":"—"}</td><td style="font-family:var(--mono)">${r.avgACW?r.avgACW.toFixed(0)+"s":"—"}</td><td style="font-family:var(--mono)">${r.transferRate!=null?(r.transferRate*100).toFixed(1)+"%":"—"}</td><td style="font-family:var(--mono)">${r.csat!=null?(r.csat*100).toFixed(1)+"%":"—"}</td><td style="font-family:var(--mono)">${r.qaScore||"—"}</td></tr>`;
+  });
+  h+='</tbody></table></div>';
+  document.getElementById("kpiArea").innerHTML=h;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SCHEDULE SOLVER (preserved from old hub)
+// ═══════════════════════════════════════════════════════════════
+function _shiftMins(sid){const s=D.shifts.find(x=>x.id===sid);if(!s)return null;const[sh,sm]=s.start.split(":").map(Number),[eh,em]=s.end.split(":").map(Number);let st=sh*60+sm,en=eh*60+em;if(en<=st)en+=1440;return{s:st,e:en}}
+function _restOk(s1,s2){if(!s1||!s2)return true;const a=_shiftMins(s1),b=_shiftMins(s2);if(!a||!b)return true;return(b.s+1440)-a.e>=720}
+function _fixALAids(){const m={};D.agents.forEach(a=>{m[a.name.toLowerCase().trim()]=a.id});D.al.forEach(al=>{if(!al.aid||al.aid===""){if(al.name){const id=m[al.name.toLowerCase().trim()];if(id)al.aid=id}}})}
+function _getPrevWeekRoster(ws){if(!ws)return null;const d=new Date(ws+"T12:00:00");d.setDate(d.getDate()-7);try{const list=loadArchiveList();const s=list.find(x=>x.week===d.toISOString().split("T")[0]);if(s&&s.data&&s.data.roster)return s.data.roster}catch(e){}return null}
+
+function solve(randomize){
+  _fixALAids();
+  const ws=document.getElementById("wkStart").value;
+  if(!ws)return{ok:false,errors:["Set week start date"]};
+  const wkDates=DAYS.map((_,i)=>{const d=new Date(ws+"T12:00:00");d.setDate(d.getDate()+i);return d.toISOString().split("T")[0]});
+  const maxOff=D.rules.max_off||2;const maxWork=D.rules.max_work||5;
+  const N=D.agents.length;const wk=workIds();
+  const dist=JSON.parse(JSON.stringify(D.dist));
+  const errs=[];
+  DAYS.forEach(d=>{const ai=allIds();const tot=ai.reduce((s,id)=>(s+(dist[d][id]||0)),0);if(tot!==N)errs.push(`${d}: total=${tot}, need ${N}`)});
+  if(errs.length)return{ok:false,errors:errs};
+  const alSet=new Set();
+  D.al.forEach(al=>{if(!al.aid)return;if(al.status==="Rejected")return;wkDates.forEach((wd,di)=>{if(wd>=al.start&&wd<=al.end)alSet.add(al.aid+"_"+di)})});
+  const schedPrefs=D.schedPrefs||[];
+  const prefMap={};schedPrefs.forEach(p=>{prefMap[p.aid+"_"+p.day]=p.shift});
+  const prevRoster=_getPrevWeekRoster(ws);const prevSun={};const prevTrail={};
+  if(prevRoster){prevRoster.forEach(r=>{const ls=r.shifts?.Sun;prevSun[r.id]=ls;let trail=0;for(let d=6;d>=0;d--){if(wk.includes(r.shifts?.[DAYS[d]]))trail++;else break}prevTrail[r.id]=trail})}
+  const agents=D.agents.map(a=>({id:a.id,name:a.name,gender:a.gender}));
+  if(randomize)agents.sort(()=>Math.random()-.5);
+  const sch=agents.map(()=>Array(7).fill(null));
+  for(let di=0;di<7;di++){const day=DAYS[di];for(let ai=0;ai<N;ai++){if(alSet.has(agents[ai].id+"_"+di)){sch[ai][di]="AL"}}}
+  for(let di=0;di<7;di++){const day=DAYS[di];const alCount=sch.filter(s=>s[di]==="AL").length;const needed=dist[day]["AL"]||0;if(alCount>needed)dist[day]["AL"]=alCount}
+  const grF=D.genderRules.F||[],grM=D.genderRules.M||[];
+  function allowed(ai,sid){const g=agents[ai].gender;const gr=g==="F"?grF:grM;if(!gr.length)return true;return gr.includes(sid)}
+  function restFull(ai){if(prevSun[agents[ai].id]&&sch[ai][0]&&wk.includes(prevSun[agents[ai].id])&&wk.includes(sch[ai][0])&&!_restOk(prevSun[agents[ai].id],sch[ai][0]))return false;for(let d=0;d<6;d++){if(wk.includes(sch[ai][d])&&wk.includes(sch[ai][d+1])&&!_restOk(sch[ai][d],sch[ai][d+1]))return false}return true}
+  function consecOk(ai){let r=prevTrail[agents[ai].id]||0;for(let d=0;d<7;d++){if(wk.includes(sch[ai][d])){r++;if(r>maxWork)return false}else r=0}return true}
+  const remaining=JSON.parse(JSON.stringify(dist));DAYS.forEach((d,di)=>{for(let ai=0;ai<N;ai++){if(sch[ai][di]){remaining[d][sch[ai][di]]=(remaining[d][sch[ai][di]]||0)-1}}});
+  const dayOrder=[...Array(7).keys()];if(randomize)dayOrder.sort(()=>Math.random()-.5);
+  for(const di of dayOrder){const day=DAYS[di];const pool=[];for(let ai=0;ai<N;ai++){if(!sch[ai][di])pool.push(ai)}
+    const shiftBuckets=[];allIds().forEach(sid=>{const need=remaining[day][sid]||0;for(let i=0;i<need;i++)shiftBuckets.push(sid)});
+    if(randomize)shiftBuckets.sort(()=>Math.random()-.5);
+    const offShifts=shiftBuckets.filter(s=>!wk.includes(s));const workShifts=shiftBuckets.filter(s=>wk.includes(s));
+    const sorted=[...workShifts,...offShifts];
+    const used=new Set();
+    for(const sid of sorted){let best=-1,bestScore=-1;
+      for(const ai of pool){if(used.has(ai))continue;if(!allowed(ai,sid))continue;
+        const orig=sch[ai][di];sch[ai][di]=sid;const wkCount=sch[ai].filter(s=>wk.includes(s)).length;const offCount=sch[ai].filter(s=>s==="OFF").length;
+        let score=10;
+        if(wk.includes(sid)){if(wkCount>maxWork)score-=50;if(!restFull(ai))score-=30;if(!consecOk(ai))score-=20}
+        else{if(offCount>maxOff&&sid==="OFF")score-=10}
+        const pk=prefMap[agents[ai].id+"_"+day];if(pk===sid)score+=5;
+        if(randomize)score+=Math.random()*2;
+        sch[ai][di]=orig;if(score>bestScore){bestScore=score;best=ai}}
+      if(best>=0){sch[best][di]=sid;used.add(best)}
+    }
+    for(const ai of pool){if(!used.has(ai)){sch[ai][di]="OFF"}}
+  }
+  const roster=agents.map((a,ai)=>{const shifts={};DAYS.forEach((d,di)=>shifts[d]=sch[ai][di]||"OFF");const wd=DAYS.filter(d=>wk.includes(shifts[d])).length;const od=DAYS.filter(d=>shifts[d]==="OFF").length;const ald=DAYS.filter(d=>shifts[d]==="AL").length;return{id:a.id,name:a.name,gender:a.gender,shifts,wd,od,ald}});
+  const summary={};DAYS.forEach(d=>{summary[d]={};allIds().forEach(sid=>{summary[d][sid]=roster.filter(r=>r.shifts[d]===sid).length})});
+  return{ok:true,roster,summary,week:ws};
+}
+
+function runSolver(randomize){
+  const btn=document.getElementById("solveBtn");btn.disabled=true;btn.innerHTML='<span class="spin"></span> Working...';
+  setTimeout(()=>{
+    try{
+      const r=solve(randomize);
+      if(r.ok){D.roster=r.roster;D.summary=r.summary;save();renderRoster();renderAll();toast("Schedule generated!");navTo("roster")}
+      else toast(r.errors[0],"err");
+    }catch(e){toast("Solver error: "+e.message,"err");console.error(e)}
+    btn.innerHTML="▶ Generate";btn.disabled=false;
+  },30);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ROSTER RENDERING
+// ═══════════════════════════════════════════════════════════════
+function renderRoster(){
+  if(!D.roster){document.getElementById("rArea").innerHTML='<div class="emp">No schedule yet. Go to <b>Distribution</b> and click <b>Generate</b>.</div>';return}
+  const ws=document.getElementById("wkStart").value;
+  const wkDates=ws?DAYS.map((_,i)=>{const d=new Date(ws+"T12:00:00");d.setDate(d.getDate()+i);return d.toLocaleDateString("en",{month:"short",day:"numeric"})}):DAYS;
+  let h='<div class="tw"><table><thead><tr><th style="min-width:180px">Agent</th>';
+  DAYS.forEach((d,i)=>h+=`<th>${d}<br><span style="font-weight:400;font-size:9px;color:var(--tx3)">${wkDates[i]||""}</span></th>`);
+  h+='<th>W</th><th>O</th><th>AL</th></tr></thead><tbody>';
+  D.roster.forEach(r=>{
+    h+=`<tr><td style="font-weight:600;font-size:11px">${r.name.split(" ").slice(0,2).join(" ")} <span class="gb ${r.gender==="F"?"gf":"gm"}" style="font-size:8px">${r.gender}</span></td>`;
+    DAYS.forEach(d=>{
+      const s=r.shifts[d];
+      h+=`<td><span class="sb" style="background:${sColor(s)};cursor:pointer" onclick="swapShift('${r.id}','${d}')">${s}</span></td>`;
+    });
+    h+=`<td class="dt ${r.wd<=5?"dok":"dbd"}">${r.wd}</td><td class="dt">${r.od}</td><td class="dt">${r.ald}</td></tr>`;
+  });
+  h+='</tbody></table></div>';
+  // Summary
+  h+='<div class="card" style="margin-top:12px"><div class="ch"><h3>📊 Summary</h3></div><div class="cb"><div class="tw"><table><thead><tr><th>Day</th>';
+  allIds().forEach(s=>h+=`<th style="background:${sColor(s)};color:#fff">${s}</th>`);
+  h+='<th>Total</th></tr></thead><tbody>';
+  DAYS.forEach(d=>{
+    h+='<tr><td style="font-weight:600">'+d+'</td>';
+    let tot=0;allIds().forEach(s=>{const c=D.summary[d][s]||0;tot+=c;h+=`<td style="font-family:var(--mono)">${c}</td>`});
+    h+=`<td style="font-family:var(--mono);font-weight:700">${tot}</td></tr>`;
+  });
+  h+='</tbody></table></div></div></div>';
+  document.getElementById("rArea").innerHTML=h;
+  document.getElementById("rWeekLabel").textContent=ws?"Week of "+ws:"";
+}
+
+function swapShift(agentId,day){
+  const r=D.roster.find(x=>x.id===agentId);if(!r)return;
+  const opts=allIds();const cur=r.shifts[day];
+  const next=opts[(opts.indexOf(cur)+1)%opts.length];
+  r.shifts[day]=next;
+  // Recalculate counts
+  const wk=workIds();r.wd=DAYS.filter(d=>wk.includes(r.shifts[d])).length;r.od=DAYS.filter(d=>r.shifts[d]==="OFF").length;r.ald=DAYS.filter(d=>r.shifts[d]==="AL").length;
+  D.summary={};DAYS.forEach(d=>{D.summary[d]={};allIds().forEach(sid=>{D.summary[d][sid]=D.roster.filter(rr=>rr.shifts[d]===sid).length})});
+  save();renderRoster();
+}
+
+function navWeek(dir){
+  const el=document.getElementById("wkStart");
+  if(dir===0){const d=new Date();d.setDate(d.getDate()-((d.getDay()+6)%7));el.value=d.toISOString().split("T")[0];return}
+  const cur=el.value?new Date(el.value+"T12:00:00"):new Date();
+  cur.setDate(cur.getDate()+(dir*7));
+  el.value=cur.toISOString().split("T")[0];
+  // Try loading from archive
+  const list=loadArchiveList();
+  const snap=list.find(x=>x.week===el.value);
+  if(snap){_restoreWeekSnap(snap);renderAll();renderRoster();toast("Loaded week "+el.value)}
+  else{D.roster=null;D.summary=null;BK.results=null;renderRoster();toast("No saved schedule for this week","warn")}
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DISTRIBUTION, AGENTS, SHIFTS
+// ═══════════════════════════════════════════════════════════════
+function renderDist(){
+  const tbl=document.getElementById("dTbl");const ai=allIds();const wk=workIds();
+  let h='<thead><tr><th>Day</th>';ai.forEach(s=>h+=`<th style="background:${sColor(s)};color:#fff">${s}</th>`);h+='<th>Total</th></tr></thead><tbody>';
+  DAYS.forEach(d=>{
+    h+='<tr><td style="font-weight:600">'+d+'</td>';
+    let t=0;ai.forEach(s=>{const v=D.dist[d]?.[s]||0;t+=v;h+=`<td><input class="di" type="number" min="0" value="${v}" data-d="${d}" data-s="${s}" onchange="chDist(this)"></td>`});
+    const ok=t===D.agents.length;
+    h+=`<td class="dt ${ok?"dok":"dbd"}">${t}</td></tr>`;
+  });
+  h+='</tbody>';tbl.innerHTML=h;
+  document.getElementById("dAC").textContent=D.agents.length;
+  popSel();
+}
+function chDist(el){D.dist[el.dataset.d][el.dataset.s]=parseInt(el.value)||0;renderDist();save()}
+function quickAdj(){const d=document.getElementById("qaDay").value,f=document.getElementById("qaFrom").value,t=document.getElementById("qaTo").value,a=parseInt(document.getElementById("qaAmt").value)||1;if(f===t)return toast("Same","err");if((D.dist[d][f]||0)<a)return toast("Not enough","err");D.dist[d][f]-=a;D.dist[d][t]=(D.dist[d][t]||0)+a;renderDist();save();toast(`Moved ${a}: ${f}→${t}`)}
+function popSel(){["qaDay","qaFrom","qaTo"].forEach(id=>{const sel=document.getElementById(id);if(!sel)return;const val=sel.value;sel.innerHTML="";if(id==="qaDay")DAYS.forEach(d=>{sel.innerHTML+=`<option value="${d}">${d}</option>`});else allIds().forEach(s=>{sel.innerHTML+=`<option value="${s}">${s}</option>`});if(val)sel.value=val})}
+function renderAgents(){
+  document.getElementById("agentCount").textContent=D.agents.length;
+  document.getElementById("bA").textContent=D.agents.length;
+  const el=document.getElementById("aList");
+  el.innerHTML=D.agents.map(a=>`<div class="ar" style="flex-wrap:wrap;gap:5px"><span class="gb ${a.gender==="F"?"gf":"gm"}">${a.gender}</span><span style="flex:1;min-width:160px;overflow:hidden;text-overflow:ellipsis;font-weight:500">${a.name}</span><input placeholder="Genesys alias" value="${a.genesysAlias||""}" onchange="setAlias('${a.id}',this.value)" style="flex:2;min-width:150px;font-size:10px;background:var(--s3);border:1px solid var(--brd);border-radius:5px;padding:3px 7px;color:var(--tx2)" title="Name as appears in Genesys"><button class="btn bs bsm bic" onclick="renameAgent('${a.id}','${a.name.replace(/'/g,"\\'")}')">✏</button><button class="btn bd bsm bic" onclick="delAgent('${a.id}')">✕</button></div>`).join("");
+}
+function setAlias(id,val){const a=D.agents.find(x=>x.id===id);if(a){a.genesysAlias=val.trim();save()}}
+function renameAgent(id,name){const n=prompt("Rename agent:",name);if(n&&n.trim()&&n.trim()!==name){const a=D.agents.find(x=>x.id===id);if(a){a.name=n.trim();save();renderAgents();toast("Renamed")}}}
+function addAgent(){const n=document.getElementById("nAN").value.trim(),g=document.getElementById("nAG").value;if(!n)return toast("Name required","err");D.agents.push({id:stableId(n),name:n,gender:g,genesysAlias:""});document.getElementById("nAN").value="";hideEl("addAF");renderAll();toast("Added")}
+function delAgent(id){if(!confirm("Remove?"))return;D.agents=D.agents.filter(a=>a.id!==id);D.al=D.al.filter(x=>x.aid!==id);save();renderAll()}
+function renderAgentLinks(){const el=document.getElementById("agLinksArea");if(!el)return;const base=location.origin+location.pathname;el.innerHTML=D.agents.map(a=>`<div class="ar"><span class="gb ${a.gender==="F"?"gf":"gm"}" style="font-size:8px">${a.gender}</span><b style="min-width:150px;font-size:11px;overflow:hidden;text-overflow:ellipsis">${a.name}</b><code style="font-family:var(--mono);font-size:9px;color:var(--cyn);background:var(--s3);padding:2px 5px;border-radius:3px;flex:1;word-break:break-all">${base}?agent=${a.id}</code><button class="btn bs bsm" onclick="navigator.clipboard.writeText('${base}?agent=${a.id}');toast('Copied!')">Copy</button></div>`).join("")}
+function renderShifts(){
+  const el=document.getElementById("sList");
+  el.innerHTML=D.shifts.map(s=>`<div class="ar"><span class="sb" style="background:${s.color}">${s.id}</span><span style="font-weight:500;min-width:120px">${s.name}</span><span style="font-family:var(--mono);color:var(--cyn)">${s.start} — ${s.end}</span><input type="color" value="${s.color}" onchange="updS('${s.id}','color',this.value)" style="width:28px;height:24px;padding:1px"><button class="btn bd bsm bic" onclick="delShift('${s.id}')">✕</button></div>`).join("");
+}
+function addShift(){const id=document.getElementById("nSI").value.trim().toUpperCase();if(!id||id==="OFF"||id==="AL")return toast("Invalid","err");if(D.shifts.find(s=>s.id===id))return toast("Exists","err");const st=document.getElementById("nSS").value,en=document.getElementById("nSE").value,nm=document.getElementById("nSN").value.trim()||id,cl=document.getElementById("nSC").value||"#6366f1";D.shifts.push({id,name:nm,start:st,end:en,color:cl});DAYS.forEach(d=>{if(!D.dist[d])D.dist[d]={};D.dist[d][id]=0});hideEl("addSF");renderAll();toast("Shift "+id+" added")}
+function updS(id,f,v){const s=D.shifts.find(x=>x.id===id);if(s){s[f]=v;renderShifts();save()}}
+function delShift(id){if(!confirm("Delete "+id+"?"))return;D.shifts=D.shifts.filter(s=>s.id!==id);DAYS.forEach(d=>delete D.dist[d]?.[id]);renderAll()}
+function renderGR(){const area=document.getElementById("grArea");if(!area)return;const wk=workIds();let h='<p style="font-size:11px;color:var(--tx2);margin-bottom:8px">Check which shifts each gender <b>can</b> work. None checked = all allowed.</p>';["F","M"].forEach(g=>{const al=D.genderRules[g]||[];h+=`<div class="fr" style="margin-bottom:6px"><label style="width:60px;font-weight:600">${g==="F"?"Female":"Male"}</label>`;wk.forEach(sid=>{h+=`<label style="display:inline-flex;align-items:center;gap:3px;cursor:pointer;font-size:11px"><input type="checkbox" ${al.includes(sid)?"checked":""} onchange="tgGR('${g}','${sid}',this.checked)"> ${sid}</label>`});if(!al.length)h+='<span style="font-size:10px;color:var(--grn);margin-left:6px">All</span>';h+="</div>"});area.innerHTML=h}
+function tgGR(g,sid,on){if(!D.genderRules[g])D.genderRules[g]=[];if(on){if(!D.genderRules[g].includes(sid))D.genderRules[g].push(sid)}else D.genderRules[g]=D.genderRules[g].filter(x=>x!==sid);renderGR();save()}
+function saveRules(){D.rules.max_off=parseInt(document.getElementById("rMO").value);D.rules.max_work=parseInt(document.getElementById("rMW").value);save();toast("Saved")}
+
+function renderAll(){document.getElementById("bA").textContent=D.agents.length;renderDist();renderAgents();renderShifts();renderGR();renderAL();popSel();save()}
+
+// ═══════════════════════════════════════════════════════════════
+// BREAK SOLVER (preserved)
+// ═══════════════════════════════════════════════════════════════
+function bkSlots(code){const sh=SH_MAP();const s=sh[code];if(!s)return[];const slots=[];for(let m=s.s+60;m<=s.e-60;m+=15)slots.push(m);return slots}
+function bkSolveDay(dn,agents){const sh=SH_MAP();const w=[],errs=[];for(const{name,code}of agents){if(NW2.has(code))continue;if(!sh[code]){errs.push(`Unknown '${code}' for ${name}`);continue}const pat=code==="C"?BK.breakPatternC:BK.breakPattern;const rq=pat.reduce((a,b)=>a+b,0);w.push({name,code,rq,pattern:pat,vs:bkSlots(code),start:sh[code].s,end:sh[code].e})}
+  if(errs.length)return{ok:false,error:errs.join("; ")};if(!w.length)return{ok:true,assignments:[]};
+  const slotCap={};BK.peakWindows.forEach(pw=>{for(let m=pw.from;m<pw.to;m+=15){if(!slotCap[m])slotCap[m]=pw.max}});
+  const slotUsage={};w.sort((a,b)=>a.vs.length-b.vs.length);const assignments=[];
+  for(const ag of w){const bks=[];let bi=0;for(const sz of ag.pattern){let placed=false;const mid=Math.floor(ag.start+(ag.end-ag.start)*(bi+1)/(ag.pattern.length+1));const cands=[...ag.vs].sort((a,b)=>Math.abs(a-mid)-Math.abs(b-mid));
+    for(const slot of cands){let canPlace=true;for(let s=0;s<sz;s++){const t=slot+s*15;const cap=slotCap[t%1440]||3;if((slotUsage[t]||0)>=cap){canPlace=false;break}}
+      if(canPlace){for(let s=0;s<sz;s++){const t=slot+s*15;slotUsage[t]=(slotUsage[t]||0)+1}bks.push({slot,dur:sz*15,type:bi===ag.pattern.length-1&&sz>=2?"meal":"break"});placed=true;break}}
+    if(!placed)bks.push({slot:null,dur:sz*15,type:"break"});bi++}
+    assignments.push({name:ag.name,code:ag.code,breaks:bks})}
+  return{ok:true,assignments}
+}
+
+function regenAllBreaks(){
+  if(!D.roster){toast("Generate roster first","err");return}
+  BK.breakPattern=document.getElementById("bkPat").value.split(",").map(Number);
+  BK.breakPatternC=document.getElementById("bkPatC").value.split(",").map(Number);
+  BK.results={};
+  DAYS.forEach(d=>{
+    const agents=D.roster.filter(r=>r.shifts[d]&&!NW2.has(r.shifts[d])).map(r=>({name:r.name,code:r.shifts[d]}));
+    const br=bkSolveDay(d,agents);
+    BK.results[d]={assignments:br.ok?br.assignments:[],error:br.ok?null:br.error};
+  });
+  save();renderBreakDay(DAYS[0]);toast("Breaks regenerated");
+}
+
+function renderBreakDay(day){
+  const tabs=document.getElementById("bkDayTabs");
+  tabs.innerHTML=DAYS.map(d=>`<button class="btn ${d===day?'bp':'bs'} bsm" onclick="renderBreakDay('${d}')">${d}</button>`).join("");
+  const el=document.getElementById("bkDayArea");
+  if(!BK.results||!BK.results[day]){el.innerHTML='<div class="emp">No break data for '+day+'</div>';return}
+  const dd=BK.results[day];
+  if(dd.error){el.innerHTML=`<div class="emp" style="color:var(--red)">${dd.error}</div>`;return}
+  if(!dd.assignments||!dd.assignments.length){el.innerHTML='<div class="emp">No agents on '+day+'</div>';return}
+  let h='<div class="tw"><table><thead><tr><th>Agent</th><th>Shift</th>';
+  const maxBrk=Math.max(...dd.assignments.map(a=>a.breaks.length));
+  for(let i=0;i<maxBrk;i++)h+=`<th>${i<maxBrk-1?"Break "+(i+1):"Meal"}</th>`;
+  h+='</tr></thead><tbody>';
+  dd.assignments.forEach(a=>{
+    h+=`<tr><td>${a.name.split(" ").slice(0,2).join(" ")}</td><td><span class="sb" style="background:${sColor(a.code)}">${a.code}</span></td>`;
+    a.breaks.forEach(b=>{
+      if(b.slot!=null){const hh=Math.floor(b.slot/60)%24;const mm=b.slot%60;const ehh=Math.floor((b.slot+b.dur)/60)%24;const emm=(b.slot+b.dur)%60;
+        h+=`<td style="font-family:var(--mono);font-size:10px">${String(hh).padStart(2,"0")}:${String(mm).padStart(2,"0")} — ${String(ehh).padStart(2,"0")}:${String(emm).padStart(2,"0")}</td>`}
+      else h+='<td style="color:var(--red)">—</td>';
+    });
+    h+='</tr>';
+  });
+  h+='</tbody></table></div>';
+  el.innerHTML=h;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ANNUAL LEAVE
+// ═══════════════════════════════════════════════════════════════
+function alDays(s,e){const a=new Date(s+"T00:00:00"),b=new Date(e+"T00:00:00");if(b<a)return 0;return Math.round((b-a)/86400000)+1}
+function alStatusColor(st){return{Pending:"#f59e0b",Approved:"#10b981",Completed:"#6b7280",Ongoing:"#3b82f6",Rejected:"#ef4444"}[st]||"#586380"}
+function alYear(d,rec){if(rec&&rec.yearTag)return rec.yearTag;return new Date(d+"T00:00:00").getFullYear()}
+function setALYear(y){AL_YEAR=y;document.querySelectorAll(".alYearBtn").forEach(b=>{b.className="btn bsm alYearBtn "+(b.dataset.y==String(y)?"bp":"bs")});renderAL()}
+function alFiltered(){if(AL_YEAR==="all")return D.al;return D.al.filter(a=>alYear(a.start,a)===AL_YEAR||alYear(a.end,a)===AL_YEAR)}
+function alOverlap(start,end,excludeId){return D.al.filter(a=>a.id!==excludeId&&a.status!=="Rejected"&&a.start<=end&&a.end>=start)}
+function popALSel(){const sel=document.getElementById("alAgent");sel.innerHTML='<option value="">Select agent</option>';D.agents.forEach(a=>{sel.innerHTML+=`<option value="${a.id}">${a.name}</option>`})}
+function addAL(){
+  const aid=document.getElementById("alAgent").value;const s=document.getElementById("alS").value;const e=document.getElementById("alE").value;const st=document.getElementById("alSt").value;
+  if(!aid||!s||!e)return toast("Fill all fields","err");
+  const agent=D.agents.find(a=>a.id===aid);
+  D.al.push({id:uid(),aid,name:agent?agent.name:"",start:s,end:e,status:st,yearTag:null});
+  _fixALAids();save();renderAL();toast("Leave added");
+}
+function renderAL(){
+  const el=document.getElementById("alL");const filtered=alFiltered();
+  document.getElementById("alCount").textContent=filtered.length;
+  if(!filtered.length){el.innerHTML='<div class="emp">No leave records'+(AL_YEAR!=="all"?" for "+AL_YEAR:"")+'</div>';renderALBalance();return}
+  const sorted=[...filtered].sort((a,b)=>new Date(a.start)-new Date(b.start));
+  el.innerHTML=sorted.map(a=>{
+    const days=alDays(a.start,a.end);const st=a.status||"Approved";const ol=alOverlap(a.start,a.end,a.id);
+    return`<div class="ar" style="border-left:3px solid ${alStatusColor(st)}"><span class="tg" style="background:${alStatusColor(st)}20;color:${alStatusColor(st)}">${st}</span><b style="min-width:150px;font-size:11px">${a.name}</b><span style="font-family:var(--mono);font-size:10px;color:var(--tx2)">${a.start} → ${a.end}</span><span style="font-family:var(--mono);font-weight:700;color:var(--cyn)">${days}d</span>${ol.length>=2?'<span style="color:var(--red);font-size:10px">⚠ OVERLAP('+ol.length+')</span>':""}<select onchange="chALStatus('${a.id}',this.value)" style="width:85px;font-size:10px;padding:2px"><option ${st==="Pending"?"selected":""}>Pending</option><option ${st==="Approved"?"selected":""}>Approved</option><option ${st==="Ongoing"?"selected":""}>Ongoing</option><option ${st==="Completed"?"selected":""}>Completed</option><option ${st==="Rejected"?"selected":""}>Rejected</option></select><button class="btn bd bsm bic" onclick="delAL('${a.id}')">✕</button></div>`;
+  }).join("");
+  renderALBalance();
+}
+function chALStatus(id,st){const a=D.al.find(x=>x.id===id);if(a){a.status=st;save();renderAL()}}
+function delAL(id){if(!confirm("Delete?"))return;D.al=D.al.filter(x=>x.id!==id);save();renderAL()}
+function renderALBalance(){
+  const el=document.getElementById("alBalance");if(!el)return;
+  const yr=AL_YEAR==="all"?null:AL_YEAR;const total=30;
+  const byAgent={};D.agents.forEach(a=>byAgent[a.id]={name:a.name,used:0,approved:0,pending:0});
+  D.al.forEach(a=>{if(!byAgent[a.aid])return;if(yr&&alYear(a.start)!==yr)return;const days=alDays(a.start,a.end);const st=a.status||"Approved";if(st==="Completed"||st==="Ongoing")byAgent[a.aid].used+=days;else if(st==="Approved")byAgent[a.aid].approved+=days;else if(st==="Pending")byAgent[a.aid].pending+=days});
+  const entries=Object.entries(byAgent).filter(([,b])=>b.used||b.approved||b.pending).sort((a,b)=>(total-a[1].used-a[1].approved)-(total-b[1].used-b[1].approved));
+  if(!entries.length){el.innerHTML="";return}
+  let h='<div class="card" style="margin-top:12px"><div class="ch"><h3>📊 Leave Balance</h3></div><div class="cb"><div class="tw"><table><thead><tr><th>Agent</th><th>Entitled</th><th>Used</th><th>Approved</th><th>Pending</th><th>Remaining</th></tr></thead><tbody>';
+  entries.forEach(([,b])=>{const rem=total-b.used-b.approved;const c=rem<=0?"var(--red)":rem<=5?"var(--orn)":"var(--grn)";
+    h+=`<tr><td>${b.name.split(" ").slice(0,2).join(" ")}</td><td style="font-family:var(--mono)">${total}</td><td style="font-family:var(--mono)">${b.used}</td><td style="font-family:var(--mono)">${b.approved}</td><td style="font-family:var(--mono);color:var(--orn)">${b.pending}</td><td style="font-family:var(--mono);font-weight:700;color:${c}">${rem}</td></tr>`});
+  h+='</tbody></table></div></div></div>';
+  el.innerHTML=h;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TRACKERS
+// ═══════════════════════════════════════════════════════════════
+function renderTrackers(){
+  const el=document.getElementById("trackerList");
+  el.innerHTML='<div class="tw"><table><thead><tr><th>Tracker</th><th>Frequency</th><th>Owner</th><th>Purpose</th><th>Link</th><th></th></tr></thead><tbody>'+
+    D.trackers.map((t,i)=>`<tr><td style="font-weight:600">${t.name}</td><td>${t.freq}</td><td>${t.owner}</td><td style="font-size:10px;color:var(--tx2)">${t.purpose}</td><td>${t.link?`<a href="${t.link}" target="_blank" style="color:var(--cyn)">Open</a>`:"—"}</td><td><button class="btn bd bsm bic" onclick="D.trackers.splice(${i},1);save();renderTrackers()">✕</button></td></tr>`).join("")+
+    '</tbody></table></div>';
+}
+function addTracker(){const name=prompt("Tracker name:");if(!name)return;D.trackers.push({name,freq:"Daily",owner:"",purpose:"",link:""});save();renderTrackers()}
+
+// ═══════════════════════════════════════════════════════════════
+// ARCHIVE
+// ═══════════════════════════════════════════════════════════════
+function getArchiveKey(){return"qch2_archive"}
+function loadArchiveList(){try{const s=localStorage.getItem(getArchiveKey());return s?JSON.parse(s):[]}catch(e){return[]}}
+function saveArchiveList(list){localStorage.setItem(getArchiveKey(),JSON.stringify(list))}
+function saveWeekArchive(){if(!D.roster)return toast("Generate first","err");const wk=document.getElementById("wkStart").value;if(!wk)return toast("Set week date","err");const snap={week:wk,savedAt:new Date().toISOString(),data:JSON.parse(JSON.stringify(D)),breaks:BK.results?JSON.parse(JSON.stringify({results:BK.results,breakPattern:BK.breakPattern,breakPatternC:BK.breakPatternC,peakWindows:BK.peakWindows})):null};const list=loadArchiveList();const idx=list.findIndex(x=>x.week===wk);if(idx>=0){if(!confirm(`Overwrite ${wk}?`))return;list[idx]=snap}else list.unshift(snap);saveArchiveList(list);renderArchive();toast(`Week ${wk} saved!`)}
+function _restoreWeekSnap(snap){const sd=snap.data;D.shifts=sd.shifts||D.shifts;D.agents=sd.agents||D.agents;D.rules=sd.rules||D.rules;D.genderRules=sd.genderRules||D.genderRules;D.dist=sd.dist||D.dist;D.roster=sd.roster;D.summary=sd.summary;D.al=sd.al||D.al;if(snap.breaks){BK.results=snap.breaks.results;BK.breakPattern=snap.breaks.breakPattern;BK.breakPatternC=snap.breaks.breakPatternC;BK.peakWindows=snap.breaks.peakWindows}else BK.results=null}
+function renderArchive(){const list=loadArchiveList();const el=document.getElementById("archList");if(!list.length){el.innerHTML='<div class="emp">No saved weeks yet</div>';return}el.innerHTML=list.map(s=>`<div class="ar"><span style="font-family:var(--mono);font-weight:600;color:var(--cyn);min-width:90px">${s.week}</span><span style="font-size:10px;color:var(--tx3)">${new Date(s.savedAt).toLocaleString()}</span><span style="font-size:10px;color:var(--tx3)">${s.data?.agents?.length||"?"} agents</span><button class="btn bp bsm" onclick="loadWeekArchive('${s.week}')">Load</button><button class="btn bs bsm" onclick="exportWeekJSON('${s.week}')">📥 JSON</button><button class="btn bd bsm bic" onclick="delArchive('${s.week}')">✕</button></div>`).join("")}
+function loadWeekArchive(wk){const list=loadArchiveList();const snap=list.find(x=>x.week===wk);if(!snap)return toast("Not found","err");_restoreWeekSnap(snap);document.getElementById("wkStart").value=snap.week;document.getElementById("rMO").value=D.rules.max_off;document.getElementById("rMW").value=D.rules.max_work;renderAll();renderRoster();toast(`Loaded ${wk}`);navTo("roster")}
+function delArchive(wk){if(!confirm(`Delete ${wk}?`))return;const list=loadArchiveList().filter(x=>x.week!==wk);saveArchiveList(list);renderArchive();toast("Deleted")}
+function exportWeekJSON(wk){const list=loadArchiveList();const snap=list.find(x=>x.week===wk);if(!snap)return;dl(new Blob([JSON.stringify(snap,null,2)],{type:"application/json"}),"week_"+wk+".json")}
+function importWeekFile(){document.getElementById("impFile").click()}
+function handleImport(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const snap=JSON.parse(r.result);if(!snap.week)return toast("Invalid file","err");const list=loadArchiveList();list.unshift(snap);saveArchiveList(list);renderArchive();toast("Imported "+snap.week)}catch(ex){toast("Parse error","err")}};r.readAsText(f)}
+
+// ═══════════════════════════════════════════════════════════════
+// EXPORT
+// ═══════════════════════════════════════════════════════════════
+function exportCSV(){if(!D.roster)return toast("Generate first","err");let c="Agent,Gender,"+DAYS.join(",")+",Work,OFF,AL\n";D.roster.forEach(r=>{c+=`"${r.name}",${r.gender},`+DAYS.map(d=>r.shifts[d]).join(",")+`,${r.wd},${r.od},${r.ald}\n`});dl(new Blob([c],{type:"text/csv"}),"schedule.csv")}
+function exportXLSX(){if(!D.roster)return toast("Generate first","err");if(typeof XLSX==="undefined")return toast("SheetJS not loaded","err");const wb=XLSX.utils.book_new();const hdr=["Agent","Gender",...DAYS,"Work","OFF","AL"];const rows=D.roster.map(r=>[r.name,r.gender,...DAYS.map(d=>r.shifts[d]),r.wd,r.od,r.ald]);XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([hdr,...rows]),"Roster");XLSX.writeFile(wb,"schedule.xlsx");toast("Exported")}
+
+// ═══════════════════════════════════════════════════════════════
+// BACKUP / RESTORE
+// ═══════════════════════════════════════════════════════════════
+function backupData(){
+  const backup={version:"2.0",date:new Date().toISOString(),data:D,breaks:BK,archive:loadArchiveList()};
+  dl(new Blob([JSON.stringify(backup,null,2)],{type:"application/json"}),"qch2_backup_"+todayStr()+".json");
+  toast("Backup downloaded");
+}
+function restoreData(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();r.onload=()=>{
+    try{
+      const b=JSON.parse(r.result);
+      if(b.data){Object.assign(D,b.data);if(b.breaks)Object.assign(BK,b.breaks);if(b.archive)saveArchiveList(b.archive);save();renderAll();if(D.roster)renderRoster();toast("Restored successfully!");navTo("dashboard")}
+      else toast("Invalid backup","err");
+    }catch(ex){toast("Parse error","err")}
+  };r.readAsText(f);
+}
+function clearAllData(){localStorage.clear();location.reload()}
+function saveSettings(){
+  D.settings.graceMin=parseInt(document.getElementById("rfGrace").value)||5;
+  D.settings.breakAllow=parseInt(document.getElementById("rfBreakAllow").value)||15;
+  D.settings.mealAllow=parseInt(document.getElementById("rfMealAllow").value)||30;
+  D.settings.awayThresh=parseInt(document.getElementById("rfAwayThresh").value)||15;
+  save();toast("Settings saved");
+}
+
+// ═══════════════════════════════════════════════════════════════
+// AGENT PORTAL (publish + render)
+// ═══════════════════════════════════════════════════════════════
+function publishAgentData(){
+  const data={version:"2.0",published:new Date().toISOString(),agents:{}};
+  D.agents.forEach(a=>{
+    const month=monthStr();
+    const att=(D.attendance[month]||[]).filter(r=>r.agentId===a.id);
+    const kpi=(D.kpis[month]||[]).find(r=>r.agentId===a.id);
+    const qa=(D.qa[month]||[]).find(r=>r.agentId===a.id);
+    const mtd=D.mtd&&D.mtd[month]?(D.mtd[month]||[]).find(r=>r.agentId===a.id):null;
+    const al=D.al.filter(x=>x.aid===a.id);
+    const rosterEntry=D.roster?D.roster.find(r=>r.id===a.id):null;
+    data.agents[a.id]={name:a.name,roster:rosterEntry,attendance:att,kpi,qa,mtd,al,breaks:{}};
+    if(BK.results){DAYS.forEach(d=>{const dd=BK.results[d];if(dd&&dd.assignments){const ab=dd.assignments.find(x=>x.name===a.name);if(ab)data.agents[a.id].breaks[d]=ab.breaks}})}
+  });
+  dl(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),"agent_data.json");
+  toast("Agent data downloaded — upload to GitHub /data/ folder");
+}
+
+// Agent portal mode (when ?agent=ID)
+function checkAgentMode(){
+  const params=new URLSearchParams(location.search);
+  const agId=params.get("agent");
+  if(!agId)return false;
+  
+  // Load saved data
+  loadSaved();
+  
+  // Try to find agent
+  let agent=D.agents.find(a=>a.id===agId);
+  
+  // Try loading from published JSON
+  document.body.innerHTML='<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0a0d14;color:#e8edf8"><div style="text-align:center;padding:20px"><div style="width:48px;height:48px;background:linear-gradient(135deg,#4f8ef7,#22d3ee);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 14px">📅</div><h1 style="font-size:17px;font-weight:700;margin-bottom:4px"><em style="font-style:normal;background:linear-gradient(135deg,#4f8ef7,#22d3ee);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Qmobility</em> Agent Portal</h1><p style="color:#566180;font-size:12px" id="agLoadMsg">Loading...</p><div style="margin-top:16px;width:30px;height:30px;border:3px solid #1a2035;border-top-color:#4f8ef7;border-radius:50%;animation:spin .8s linear infinite;margin:16px auto"></div></div></div><style>@keyframes spin{to{transform:rotate(360deg)}}</style>';
+  
+  // Fetch agent_data.json
+  const base=location.origin+location.pathname.replace(/[^/]*$/,"");
+  fetch(base+"data/agent_data.json").then(r=>r.ok?r.json():null).then(data=>{
+    if(data&&data.agents&&data.agents[agId]){
+      renderAgentPortalView(data.agents[agId],agId);
+    } else if(agent){
+      renderAgentPortalLocal(agent);
+    } else {
+      document.getElementById("agLoadMsg").textContent="Agent not found. Ask your supervisor for a fresh link.";
+    }
+  }).catch(()=>{
+    if(agent)renderAgentPortalLocal(agent);
+    else document.getElementById("agLoadMsg").textContent="Could not load data. Try again later.";
+  });
+  
+  return true;
+}
+
+function renderAgentPortalView(agData,agId){
+  const name=agData.name||"Agent";
+  let h=`<div style="min-height:100vh;background:#0a0d14;color:#e8edf8;font-family:'Outfit',system-ui,sans-serif;padding:16px;max-width:600px;margin:0 auto">`;
+  h+=`<div style="text-align:center;margin-bottom:20px"><h1 style="font-size:18px;font-weight:700"><em style="font-style:normal;background:linear-gradient(135deg,#4f8ef7,#22d3ee);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Qmobility</em></h1><h2 style="font-size:15px;font-weight:600;margin-top:4px">${name}</h2></div>`;
+  
+  // Schedule
+  if(agData.roster&&agData.roster.shifts){
+    h+=`<div style="background:#111827;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:14px;margin-bottom:12px"><h3 style="font-size:12px;font-weight:700;color:#8a96b4;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">📅 My Schedule</h3><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">`;
+    DAYS.forEach(d=>{const s=agData.roster.shifts[d];h+=`<div style="text-align:center"><div style="font-size:9px;font-weight:700;color:#566180;margin-bottom:3px">${d}</div><span style="display:inline-block;min-width:32px;padding:4px 6px;border-radius:5px;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;color:#fff;background:${sColor(s)}">${s}</span></div>`});
+    h+=`</div></div>`;
+  }
+  
+  // Login Hours MTD
+  if(agData.mtd){
+    const m=agData.mtd;
+    const pct=Math.min(100,m.mtdHoursRatio*100);
+    const c=pct>=95?"#22c987":pct>=85?"#f5a623":"#f05252";
+    h+=`<div style="background:#111827;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:14px;margin-bottom:12px"><h3 style="font-size:12px;font-weight:700;color:#8a96b4;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">📊 Login Hours MTD</h3>`;
+    h+=`<div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:11px;color:#8a96b4">Hours worked</span><span style="font-family:'IBM Plex Mono',monospace;font-weight:700;color:${c}">${m.mtdLoginHours.toFixed(1)}h / ${m.mtdExpectedHours.toFixed(0)}h</span></div>`;
+    h+=`<div style="background:#1a2035;border-radius:6px;height:20px;overflow:hidden"><div style="width:${pct}%;background:${c};height:100%;border-radius:6px;transition:width .5s"></div></div>`;
+    h+=`<div style="display:flex;justify-content:space-between;margin-top:6px;font-size:10px;color:#566180"><span>Working days: ${m.mtdWorkingDays}</span><span>Avg: ${m.mtdAvgDailyHours.toFixed(1)}h/day</span><span style="color:${c}">${pct.toFixed(0)}%</span></div></div>`;
+  }
+  
+  // Recent attendance
+  if(agData.attendance&&agData.attendance.length){
+    h+=`<div style="background:#111827;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:14px;margin-bottom:12px"><h3 style="font-size:12px;font-weight:700;color:#8a96b4;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">✅ Recent Attendance</h3>`;
+    agData.attendance.sort((a,b)=>b.date.localeCompare(a.date)).slice(0,7).forEach(r=>{
+      const ac=r.adherence>=0.90?"#22c987":r.adherence>=0.80?"#f5a623":"#f05252";
+      h+=`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:11px"><span style="font-family:'IBM Plex Mono',monospace;color:#566180;min-width:65px">${r.date.slice(5)}</span><span style="min-width:28px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:9px;padding:2px 4px;border-radius:3px;background:${sColor(r.shift)};color:#fff">${r.shift}</span><span style="font-family:'IBM Plex Mono',monospace;font-weight:600">${r.loginHours.toFixed(1)}h</span><span style="margin-left:auto;font-family:'IBM Plex Mono',monospace;font-weight:700;color:${ac}">${(r.adherence*100).toFixed(0)}%</span></div>`;
+    });
+    h+=`</div>`;
+  }
+  
+  // KPI
+  if(agData.kpi){
+    const k=agData.kpi;
+    h+=`<div style="background:#111827;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:14px;margin-bottom:12px"><h3 style="font-size:12px;font-weight:700;color:#8a96b4;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">📈 Performance</h3>`;
+    h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px">`;
+    [{l:"Answered",v:k.answered},{l:"Avg Handle",v:k.avgHandle?k.avgHandle.toFixed(0)+"s":null},{l:"Avg Talk",v:k.avgTalk?k.avgTalk.toFixed(0)+"s":null},{l:"Transfer Rate",v:k.transferRate!=null?(k.transferRate*100).toFixed(1)+"%":null},{l:"CSAT",v:k.csat!=null?(k.csat*100).toFixed(1)+"%":null},{l:"QA Score",v:agData.qa?.qaScore}].forEach(m=>{
+      if(m.v!=null)h+=`<div style="background:#1a2035;padding:8px;border-radius:6px"><div style="font-size:9px;color:#566180;font-weight:600;text-transform:uppercase">${m.l}</div><div style="font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:14px;color:#e8edf8">${m.v}</div></div>`;
+    });
+    h+=`</div></div>`;
+  }
+  
+  // Annual Leave
+  if(agData.al&&agData.al.length){
+    h+=`<div style="background:#111827;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:14px;margin-bottom:12px"><h3 style="font-size:12px;font-weight:700;color:#8a96b4;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">🌴 Annual Leave</h3>`;
+    agData.al.filter(a=>a.status!=="Rejected").sort((a,b)=>b.start.localeCompare(a.start)).slice(0,5).forEach(a=>{
+      h+=`<div style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:11px;border-bottom:1px solid rgba(255,255,255,.04)"><span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;background:${alStatusColor(a.status)}20;color:${alStatusColor(a.status)}">${a.status}</span><span style="font-family:'IBM Plex Mono',monospace;color:#8a96b4">${a.start} → ${a.end}</span><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;color:#22d3ee">${alDays(a.start,a.end)}d</span></div>`;
+    });
+    h+=`</div>`;
+  }
+  
+  h+=`<p style="text-align:center;font-size:9px;color:#566180;margin-top:20px">Qmobility Command Hub 2.0 — Last published: ${new Date().toLocaleDateString()}</p></div>`;
+  document.body.innerHTML=h;
+}
+
+function renderAgentPortalLocal(agent){
+  // Fallback: render from local data
+  const month=monthStr();
+  const att=(D.attendance[month]||[]).filter(r=>r.agentId===agent.id);
+  const kpi=(D.kpis[month]||[]).find(r=>r.agentId===agent.id);
+  const qa=(D.qa[month]||[]).find(r=>r.agentId===agent.id);
+  const mtd=D.mtd&&D.mtd[month]?(D.mtd[month]||[]).find(r=>r.agentId===agent.id):null;
+  const al=D.al.filter(x=>x.aid===agent.id);
+  const rosterEntry=D.roster?D.roster.find(r=>r.id===agent.id):null;
+  renderAgentPortalView({name:agent.name,roster:rosterEntry,attendance:att,kpi,qa,mtd,al},agent.id);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// NIGHT SHIFT ROTA (preserved structure)
+// ═══════════════════════════════════════════════════════════════
+function renderNightRota(){/* TODO: migrate from old hub */}
+function saveNightRota(){save();toast("Night rota saved")}
+function autoRotateNight(){toast("Rotate from old hub — coming soon","warn")}
+
+// ═══════════════════════════════════════════════════════════════
+// TASKS (placeholder — preserved structure)
+// ═══════════════════════════════════════════════════════════════
+function runTaskShuffle(){toast("Task shuffle — coming soon","warn")}
+function exportTasksCSV(){toast("Export tasks — coming soon","warn")}
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+(function init(){
+  // Check agent portal mode
+  if(checkAgentMode())return;
+  
+  // Load saved data
+  loadSaved();
+  _fixALAids();
+  
+  // Init upload
+  initUpload();
+  
+  // Render
+  renderAll();
+  if(D.roster)renderRoster();
+  updateFlagBadge();
+  
+  // Top date
+  document.getElementById("topDate").textContent=new Date().toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});
+  
+  // Set week start to current Monday
+  const d=new Date();d.setDate(d.getDate()-((d.getDay()+6)%7));
+  document.getElementById("wkStart").value=d.toISOString().split("T")[0];
+  
+  // Load settings into inputs
+  if(D.settings){
+    const g=document.getElementById("rfGrace");if(g)g.value=D.settings.graceMin||5;
+    const b=document.getElementById("rfBreakAllow");if(b)b.value=D.settings.breakAllow||15;
+    const m=document.getElementById("rfMealAllow");if(m)m.value=D.settings.mealAllow||30;
+    const a=document.getElementById("rfAwayThresh");if(a)a.value=D.settings.awayThresh||15;
+  }
+  
+  // Render dashboard
+  renderDashboard();
+})();
+</script>
+</body>
+</html>
