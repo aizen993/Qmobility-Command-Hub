@@ -1406,52 +1406,86 @@ function solve(randomize){
     }
     for(const ai of pool){if(!used.has(ai)){sch[ai][di]="OFF"}}
   }
-  // POST-SOLVER: Repair OFF counts — ensure exactly maxOff OFFs per non-AL agent
-  for(let rep=0;rep<200;rep++){
-    let changed=false;
-    for(let ai=0;ai<N;ai++){
-      const isFullAL=sch[ai].every(s=>s==="AL");if(isFullAL)continue;
-      const offs=sch[ai].filter(s=>s==="OFF").length;
-      if(offs>maxOff){
-        // Too many OFFs — convert one OFF to a work shift
-        for(let di=0;di<7;di++){
-          if(sch[ai][di]!=="OFF")continue;
-          // Find an agent with too few OFFs on this day who has a work shift
-          for(let a2=0;a2<N;a2++){
-            if(a2===ai)continue;
-            const o2=sch[a2].filter(s=>s==="OFF").length;
-            if(o2>=maxOff)continue;
-            if(!wk.includes(sch[a2][di]))continue;
-            const s2=sch[a2][di];
-            if(!allowed(ai,s2))continue;
-            // Swap: ai gets work shift, a2 gets OFF
-            sch[ai][di]=s2;sch[a2][di]="OFF";
-            if(restFull(ai)&&restFull(a2)&&consecOk(ai)&&consecOk(a2)){changed=true;break;}
-            sch[ai][di]="OFF";sch[a2][di]=s2; // revert
+  // POST-SOLVER: Repair OFF counts — HARD enforce exactly maxOff OFFs
+  // Pass 1: Try swaps with rest+consec checks
+  // Pass 2: Force swaps ignoring rest (correct OFF count > rest rule)
+  for(let strictness=0;strictness<2;strictness++){
+    for(let rep=0;rep<300;rep++){
+      let changed=false;
+      for(let ai=0;ai<N;ai++){
+        const alDays=sch[ai].filter(s=>s==="AL").length;
+        if(alDays>=7)continue;
+        const offs=sch[ai].filter(s=>s==="OFF").length;
+        if(offs===maxOff)continue;
+        
+        if(offs>maxOff){
+          // Too many OFFs — find a day to convert OFF→work
+          for(let di=0;di<7;di++){
+            if(sch[ai][di]!=="OFF")continue;
+            // Try swap with agent who has too few OFFs
+            let swapped=false;
+            for(let a2=0;a2<N;a2++){
+              if(a2===ai)continue;
+              const o2=sch[a2].filter(s=>s==="OFF").length;
+              if(o2>=maxOff)continue;
+              if(!wk.includes(sch[a2][di]))continue;
+              if(!allowed(ai,sch[a2][di]))continue;
+              const s2=sch[a2][di];
+              sch[ai][di]=s2;sch[a2][di]="OFF";
+              const ok=strictness>0?true:(restFull(ai)&&restFull(a2)&&consecOk(ai)&&consecOk(a2));
+              if(ok){changed=true;swapped=true;break;}
+              sch[ai][di]="OFF";sch[a2][di]=s2;
+            }
+            if(swapped)break;
+            // If no swap partner, try assigning any needed shift directly
+            if(!swapped){
+              const dayCounts={};for(let x=0;x<N;x++)dayCounts[sch[x][di]]=(dayCounts[sch[x][di]]||0)+1;
+              const day=DAYS[di];
+              for(const sid of wk){
+                if(!allowed(ai,sid))continue;
+                const have=dayCounts[sid]||0;const need=dist[day][sid]||0;
+                if(have<need){
+                  sch[ai][di]=sid;
+                  const ok=strictness>0?consecOk(ai):(restFull(ai)&&consecOk(ai));
+                  if(ok){changed=true;break;}
+                  sch[ai][di]="OFF";
+                }
+              }
+            }
+            if(changed)break;
           }
-          if(changed)break;
+        }
+        
+        if(offs<maxOff){
+          // Too few OFFs — find a day to convert work→OFF
+          for(let di=6;di>=0;di--){
+            if(!wk.includes(sch[ai][di]))continue;
+            let swapped=false;
+            // Try swap with agent who has excess OFFs
+            for(let a2=0;a2<N;a2++){
+              if(a2===ai)continue;
+              const o2=sch[a2].filter(s=>s==="OFF").length;
+              if(o2<=maxOff)continue;
+              if(sch[a2][di]!=="OFF")continue;
+              if(!allowed(a2,sch[ai][di]))continue;
+              const myShift=sch[ai][di];
+              sch[ai][di]="OFF";sch[a2][di]=myShift;
+              const ok=strictness>0?true:(restFull(ai)&&restFull(a2)&&consecOk(ai)&&consecOk(a2));
+              if(ok){changed=true;swapped=true;break;}
+              sch[ai][di]=myShift;sch[a2][di]="OFF";
+            }
+            if(swapped)break;
+            // Force: just set to OFF if distribution allows more OFFs
+            if(!swapped){
+              const dayCounts={};for(let x=0;x<N;x++)dayCounts[sch[x][di]]=(dayCounts[sch[x][di]]||0)+1;
+              const offHave=dayCounts["OFF"]||0;const offNeed=dist[DAYS[di]]["OFF"]||0;
+              if(offHave<offNeed){sch[ai][di]="OFF";changed=true;break;}
+            }
+          }
         }
       }
-      if(offs<maxOff&&!isFullAL){
-        // Too few OFFs — convert a work shift to OFF
-        for(let di=6;di>=0;di--){
-          if(!wk.includes(sch[ai][di]))continue;
-          for(let a2=0;a2<N;a2++){
-            if(a2===ai)continue;
-            const o2=sch[a2].filter(s=>s==="OFF").length;
-            if(o2<=maxOff)continue; // only take from agents with excess
-            if(sch[a2][di]!=="OFF")continue;
-            const myShift=sch[ai][di];
-            if(!allowed(a2,myShift))continue;
-            sch[ai][di]="OFF";sch[a2][di]=myShift;
-            if(restFull(ai)&&restFull(a2)&&consecOk(ai)&&consecOk(a2)){changed=true;break;}
-            sch[ai][di]=myShift;sch[a2][di]="OFF";
-          }
-          if(changed)break;
-        }
-      }
+      if(!changed)break;
     }
-    if(!changed)break;
   }
   const roster=agents.map((a,ai)=>{const shifts={};DAYS.forEach((d,di)=>shifts[d]=sch[ai][di]||"OFF");const wd=DAYS.filter(d=>wk.includes(shifts[d])).length;const od=DAYS.filter(d=>shifts[d]==="OFF").length;const ald=DAYS.filter(d=>shifts[d]==="AL").length;return{id:a.id,name:a.name,gender:a.gender,shifts,wd,od,ald}});
   const summary={};DAYS.forEach(d=>{summary[d]={};allIds().forEach(sid=>{summary[d][sid]=roster.filter(r=>r.shifts[d]===sid).length})});
