@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QLink — Agent Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0c10;--s1:#12151c;--s2:#1a1e28;--s3:#222a3a;
+  --tx:#e8edf8;--tx2:#8a96b4;--tx3:#566180;
+  --acc:#4f8ef7;--cyn:#22d3ee;--grn:#22c987;--orn:#f59e0b;--red:#f05252;--pur:#a78bfa;
+  --brd:rgba(255,255,255,.06);
+  --mono:'SF Mono',Consolas,monospace;
+}
+body{font-family:Outfit,system-ui,sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;-webkit-font-smoothing:antialiased}
+a{color:var(--acc);text-decoration:none}
+.loading{display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:16px}
+.spin{width:36px;height:36px;border:3px solid var(--s3);border-top-color:var(--acc);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.error-box{max-width:400px;text-align:center;padding:40px 24px}
+.error-box h2{color:var(--red);margin-bottom:8px}
+
+/* Header */
+.header{background:var(--s1);border-bottom:1px solid var(--brd);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--acc),var(--cyn));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff}
+.brand-name{font-size:16px;font-weight:700;letter-spacing:-.3px}
+.brand-sub{font-size:10px;color:var(--tx3);font-weight:500}
+.agent-badge{background:var(--s2);border:1px solid var(--brd);border-radius:8px;padding:6px 12px;display:flex;align-items:center;gap:8px}
+.agent-badge .name{font-weight:600;font-size:13px}
+.agent-badge .dot{width:8px;height:8px;border-radius:50%;background:var(--grn)}
+
+/* Tabs */
+.tabs{display:flex;gap:2px;padding:8px 16px;background:var(--s1);border-bottom:1px solid var(--brd);overflow-x:auto}
+.tab{padding:8px 16px;font-size:12px;font-weight:600;color:var(--tx3);cursor:pointer;border-radius:8px;white-space:nowrap;transition:all .15s}
+.tab:hover{color:var(--tx2);background:var(--s2)}
+.tab.active{color:var(--acc);background:rgba(79,142,247,.1)}
+
+/* Content */
+.content{max-width:900px;margin:0 auto;padding:20px 16px}
+.card{background:var(--s1);border:1px solid var(--brd);border-radius:14px;margin-bottom:14px;overflow:hidden}
+.card-h{padding:14px 16px;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between}
+.card-h h3{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--tx2)}
+.card-b{padding:16px}
+.empty{color:var(--tx3);font-size:13px;text-align:center;padding:20px}
+
+/* Schedule Table */
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{padding:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;font-size:10px;letter-spacing:.5px;border-bottom:1px solid var(--brd);text-align:center}
+td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.03);text-align:center}
+.shift-badge{display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:28px;border-radius:7px;font-size:12px;font-weight:700;color:#fff;font-family:var(--mono)}
+.shift-A{background:#2563eb}.shift-MS{background:#7c3aed}.shift-B{background:#0891b2}
+.shift-C{background:#6d28d9}.shift-OFF{background:#374151;color:#9ca3af}
+.shift-AL{background:#92400e;color:#fcd34d}.shift-PH{background:#065f46;color:#6ee7b7}
+.shift-SICK{background:#7f1d1d;color:#fca5a5}
+
+/* KPI Cards */
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.kpi-card{background:var(--s2);border-radius:10px;padding:14px;text-align:center}
+.kpi-label{font-size:9px;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.kpi-val{font-size:24px;font-weight:800;line-height:1.1}
+.kpi-target{font-size:9px;color:var(--tx3);margin-top:2px}
+
+/* Leave List */
+.leave-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.leave-item:last-child{border:none}
+.leave-dates{font-family:var(--mono);font-size:11px;color:var(--tx2)}
+.leave-status{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px}
+.leave-status.pending{background:#78350f;color:#fcd34d}
+.leave-status.approved{background:#064e3b;color:#6ee7b7}
+.leave-status.rejected{background:#7f1d1d;color:#fca5a5}
+
+/* Break Table */
+.break-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.break-num{font-size:10px;font-weight:700;color:var(--tx3);min-width:60px}
+.break-time{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--cyn)}
+
+/* Ranking */
+.rank-big{text-align:center;padding:20px}
+.rank-score{font-size:52px;font-weight:800;line-height:1}
+.rank-label{font-size:11px;color:var(--tx2);margin-top:4px}
+.rank-slab{margin-top:10px;display:inline-block;padding:6px 18px;border-radius:8px;font-size:14px;font-weight:700;font-family:var(--mono)}
+
+/* Leave Form */
+.form-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group label{font-size:10px;font-weight:600;color:var(--tx2);text-transform:uppercase}
+.form-group input,.form-group select,.form-group textarea{font-family:Outfit,sans-serif;font-size:12px;background:var(--s2);border:1px solid var(--brd);border-radius:8px;padding:8px 10px;color:var(--tx);outline:none}
+.form-group input:focus{border-color:var(--acc)}
+.btn{font-family:Outfit,sans-serif;font-size:12px;font-weight:600;padding:8px 18px;border-radius:8px;cursor:pointer;border:none;color:#fff;background:linear-gradient(135deg,var(--acc),#2d6ef0)}
+.btn:hover{opacity:.9}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:10px;font-size:12px;font-weight:600;z-index:9999;opacity:0;transition:opacity .3s;background:rgba(34,201,135,.15);color:#34d399;border:1px solid rgba(34,201,135,.3);backdrop-filter:blur(10px)}
+.toast.show{opacity:1}
+.toast.err{background:rgba(240,82,82,.15);color:#f87171;border-color:rgba(240,82,82,.3)}
+
+/* Mobile */
+@media(max-width:600px){
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .content{padding:12px 10px}
+  .form-row{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<div id="app" class="loading">
+  <div class="spin"></div>
+  <div style="font-size:13px;color:var(--tx3)">Loading your QLink...</div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// QLINK AGENT PORTAL
+// Reads token from ?t=, calls Worker, shows agent data
+// ═══════════════════════════════════════════════════════════
+
+const WORKER_URL = 'https://qmobility-hub.chtiwe007.workers.dev';
+const params = new URLSearchParams(location.search);
+const TOKEN = params.get('t');
+
+let AGENT = null;
+let SCHEDULE = [];
+let BREAKS = {};
+let KPI = null;
+let LEAVES = [];
+let RANKING = null;
+let ACTIVE_TAB = 'schedule';
+
+// ─── INIT ──────────────────────────────────────────
+async function init() {
+  if (!TOKEN) {
+    showError('No QLink token found', 'This link is invalid. Please ask your supervisor for a valid QLink.');
+    return;
+  }
+
+  try {
+    // Fetch agent profile
+    const meRes = await fetch(`${WORKER_URL}/api/a/${TOKEN}/me`);
+    const meData = await meRes.json();
+    
+    if (!meRes.ok || !meData.ok) {
+      showError('QLink Invalid', meData.error || 'This link is expired or revoked. Contact your supervisor.');
+      return;
+    }
+
+    AGENT = meData.agent;
+
+    // Fetch schedule for current week
+    const today = new Date();
+    const dow = today.getDay();
+    const monOffset = dow === 0 ? -6 : 1 - dow;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() + monOffset);
+    const weekStart = monday.toISOString().split('T')[0];
+
+    const schedRes = await fetch(`${WORKER_URL}/api/a/${TOKEN}/schedule?week_start=${weekStart}`);
+    const schedData = await schedRes.json();
+    if (schedData.ok) SCHEDULE = schedData.schedule || [];
+
+    // Also try to load from KV (legacy) for agents not yet in D1
+    if (!SCHEDULE.length) {
+      try {
+        const kvRes = await fetch(`${WORKER_URL}/api/agent/${AGENT.id}`);
+        const kvData = await kvRes.json();
+        if (kvData.schedule) {
+          // Convert KV format to array format
+          if (kvData.schedule.shifts) {
+            const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+            SCHEDULE = days.map(d => ({
+              day_of_week: d,
+              shift_code: kvData.schedule.shifts[d] || 'OFF',
+              week_start: weekStart
+            }));
+          }
+        }
+        if (kvData.breaks) BREAKS = kvData.breaks;
+        if (kvData.kpi) KPI = kvData.kpi;
+        if (kvData.al) LEAVES = kvData.al;
+      } catch(e) { /* KV fallback failed, ok */ }
+    }
+
+    render();
+  } catch (err) {
+    showError('Connection Error', 'Could not reach QLink server. Check your internet connection and try again.');
+    console.error(err);
+  }
+}
+
+function showError(title, msg) {
+  document.getElementById('app').innerHTML = `
+    <div class="error-box">
+      <div style="font-size:48px;margin-bottom:16px">🔗</div>
+      <h2>${title}</h2>
+      <p style="color:var(--tx3);font-size:13px;line-height:1.6">${msg}</p>
+    </div>`;
+}
+
+function toast(msg, type='ok') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (type === 'err' ? ' err' : '');
+  setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+// ─── RENDER ────────────────────────────────────────
+function render() {
+  const tabs = [
+    {id:'schedule', icon:'📅', label:'Schedule'},
+    {id:'breaks', icon:'☕', label:'Breaks'},
+    {id:'kpis', icon:'📊', label:'KPIs'},
+    {id:'ranking', icon:'🏆', label:'Ranking'},
+    {id:'leave', icon:'🌴', label:'Leave'},
+  ];
+
+  let h = '';
+  
+  // Header
+  h += `<div class="header">
+    <div class="brand">
+      <div class="brand-icon">Q</div>
+      <div>
+        <div class="brand-name">QLink</div>
+        <div class="brand-sub">Agent Portal</div>
+      </div>
+    </div>
+    <div class="agent-badge">
+      <div class="dot"></div>
+      <span class="name">${AGENT.name.split(' ').slice(0,2).join(' ')}</span>
+    </div>
+  </div>`;
+
+  // Tabs
+  h += '<div class="tabs">';
+  tabs.forEach(t => {
+    h += `<div class="tab ${ACTIVE_TAB===t.id?'active':''}" onclick="switchTab('${t.id}')">${t.icon} ${t.label}</div>`;
+  });
+  h += '</div>';
+
+  // Content
+  h += '<div class="content">';
+  
+  if (ACTIVE_TAB === 'schedule') h += renderSchedule();
+  else if (ACTIVE_TAB === 'breaks') h += renderBreaks();
+  else if (ACTIVE_TAB === 'kpis') h += renderKPIs();
+  else if (ACTIVE_TAB === 'ranking') h += renderRanking();
+  else if (ACTIVE_TAB === 'leave') h += renderLeave();
+
+  h += '</div>';
+
+  document.getElementById('app').innerHTML = h;
+  document.getElementById('app').className = '';
+}
+
+function switchTab(id) {
+  ACTIVE_TAB = id;
+  render();
+}
+
+// ─── SCHEDULE TAB ──────────────────────────────────
+function renderSchedule() {
+  if (!SCHEDULE.length) return '<div class="card"><div class="card-b"><div class="empty">No schedule published for this week yet.</div></div></div>';
+
+  const dayOrder = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const today = new Date();
+  const todayDay = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][today.getDay()];
+
+  let h = '<div class="card"><div class="card-h"><h3>📅 This Week</h3></div><div class="card-b">';
+  h += '<table><thead><tr>';
+  dayOrder.forEach(d => {
+    const isToday = d === todayDay;
+    h += `<th style="${isToday?'color:var(--acc)':''}"><div>${d}</div></th>`;
+  });
+  h += '</tr></thead><tbody><tr>';
+  
+  dayOrder.forEach(d => {
+    const entry = SCHEDULE.find(s => s.day_of_week === d);
+    const code = entry ? entry.shift_code : '—';
+    const cls = 'shift-' + code.replace(/[^A-Z]/gi,'');
+    const isToday = d === todayDay;
+    h += `<td style="${isToday?'background:rgba(79,142,247,.06)':''}"><span class="shift-badge ${cls}">${code}</span></td>`;
+  });
+
+  h += '</tr></tbody></table>';
+  h += '</div></div>';
+  return h;
+}
+
+// ─── BREAKS TAB ────────────────────────────────────
+function renderBreaks() {
+  const days = Object.keys(BREAKS);
+  if (!days.length) return '<div class="card"><div class="card-b"><div class="empty">No break schedule available. Breaks will appear after your supervisor publishes them.</div></div></div>';
+
+  let h = '';
+  days.forEach(day => {
+    const slots = BREAKS[day];
+    if (!slots || !slots.length) return;
+    h += `<div class="card"><div class="card-h"><h3>☕ ${day}</h3></div><div class="card-b">`;
+    slots.forEach((slot, i) => {
+      const time = typeof slot === 'number' 
+        ? `${String(Math.floor(slot/60)).padStart(2,'0')}:${String(slot%60).padStart(2,'0')}` 
+        : slot;
+      h += `<div class="break-row"><span class="break-num">Break ${i+1}</span><span class="break-time">${time} — ${typeof slot==='number'?String(Math.floor((slot+15)/60)).padStart(2,'0')+':'+String((slot+15)%60).padStart(2,'0'):''}</span><span style="font-size:10px;color:var(--tx3)">15 min</span></div>`;
+    });
+    h += '</div></div>';
+  });
+  return h || '<div class="card"><div class="card-b"><div class="empty">No breaks data available.</div></div></div>';
+}
+
+// ─── KPIs TAB ──────────────────────────────────────
+function renderKPIs() {
+  if (!KPI) return '<div class="card"><div class="card-b"><div class="empty">KPI data will appear here once your supervisor uploads monthly results.</div></div></div>';
+
+  let h = '<div class="card"><div class="card-h"><h3>📊 My Performance</h3></div><div class="card-b">';
+  h += '<div class="kpi-grid">';
+  
+  const metrics = [
+    {label:'QA Score', val:KPI.qa, fmt:v=>v?.toFixed(1), color:'var(--pur)', target:'85+'},
+    {label:'AHT', val:KPI.aht, fmt:v=>{const m=Math.floor(v/60);const s=Math.round(v%60);return m+':'+String(s).padStart(2,'0')}, color:'var(--cyn)', target:'<5:00'},
+    {label:'CSAT', val:KPI.csat, fmt:v=>v?.toFixed(1)+'%', color:'var(--acc)', target:'80%+'},
+    {label:'Interactions', val:KPI.interactions, fmt:v=>v, color:'var(--grn)', target:'—'},
+    {label:'Adherence', val:KPI.adherence, fmt:v=>v?.toFixed(1)+'%', color:'var(--orn)', target:'97%+'},
+    {label:'Unplanned', val:KPI.unplanned, fmt:v=>v+' days', color:'var(--red)', target:'0'},
+  ];
+
+  metrics.forEach(m => {
+    if (m.val === undefined || m.val === null) return;
+    h += `<div class="kpi-card">
+      <div class="kpi-label">${m.label}</div>
+      <div class="kpi-val" style="color:${m.color}">${m.fmt(m.val)}</div>
+      <div class="kpi-target">Target: ${m.target}</div>
+    </div>`;
+  });
+
+  h += '</div></div></div>';
+  return h;
+}
+
+// ─── RANKING TAB ───────────────────────────────────
+function renderRanking() {
+  if (!RANKING) return '<div class="card"><div class="card-b"><div class="empty">Stack ranking will appear here once your supervisor publishes monthly results.</div></div></div>';
+  
+  let h = '<div class="card"><div class="card-b">';
+  h += '<div class="rank-big">';
+  h += `<div class="rank-score">${RANKING.incentiveScore || '—'}</div>`;
+  h += '<div class="rank-label">Incentive Score (out of 5.00)</div>';
+  if (RANKING.slab) {
+    h += `<div class="rank-slab" style="background:${RANKING.slabColor||'var(--acc)'}20;color:${RANKING.slabColor||'var(--acc)'};border:1px solid ${RANKING.slabColor||'var(--acc)'}40">${RANKING.slab} — ${RANKING.payoutAmount||0} AED</div>`;
+  }
+  h += '</div></div></div>';
+  return h;
+}
+
+// ─── LEAVE TAB ─────────────────────────────────────
+function renderLeave() {
+  let h = '';
+
+  // Request form
+  h += '<div class="card"><div class="card-h"><h3>🌴 Request Leave</h3></div><div class="card-b">';
+  h += `<div class="form-row">
+    <div class="form-group"><label>From</label><input type="date" id="leaveFrom"></div>
+    <div class="form-group"><label>To</label><input type="date" id="leaveTo"></div>
+    <div class="form-group"><label>Type</label>
+      <select id="leaveType"><option value="annual">Annual</option><option value="sick">Sick</option><option value="unpaid">Unpaid</option></select>
+    </div>
+    <div class="form-group"><label>Reason</label><input type="text" id="leaveReason" placeholder="Optional"></div>
+  </div>
+  <button class="btn" onclick="submitLeave()">Submit Request</button>`;
+  h += '</div></div>';
+
+  // Leave history
+  h += '<div class="card"><div class="card-h"><h3>📋 My Leave Requests</h3></div><div class="card-b">';
+  if (!LEAVES.length) {
+    h += '<div class="empty">No leave requests yet.</div>';
+  } else {
+    LEAVES.forEach(l => {
+      const status = l.status || 'Pending';
+      const cls = status.toLowerCase();
+      h += `<div class="leave-item">
+        <span class="leave-dates">${l.start || l.start_date} → ${l.end || l.end_date}</span>
+        <span style="font-size:11px;color:var(--tx2)">${l.days_count || ''}d</span>
+        <span class="leave-status ${cls}">${status}</span>
+      </div>`;
+    });
+  }
+  h += '</div></div>';
+  return h;
+}
+
+async function submitLeave() {
+  const from = document.getElementById('leaveFrom')?.value;
+  const to = document.getElementById('leaveTo')?.value;
+  const type = document.getElementById('leaveType')?.value;
+  const reason = document.getElementById('leaveReason')?.value;
+
+  if (!from || !to) { toast('Select dates', 'err'); return; }
+  if (new Date(to) < new Date(from)) { toast('End before start', 'err'); return; }
+
+  const days = Math.round((new Date(to) - new Date(from)) / 86400000) + 1;
+
+  try {
+    const res = await fetch(`${WORKER_URL}/api/a/${TOKEN}/leave-request`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        leave_type: type,
+        start_date: from,
+        end_date: to,
+        days_count: days,
+        reason: reason
+      })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      toast('Leave request submitted! ✓');
+      LEAVES.push({start_date:from, end_date:to, days_count:days, status:'pending'});
+      render();
+    } else {
+      toast(data.error || 'Failed', 'err');
+    }
+  } catch(e) {
+    toast('Network error', 'err');
+  }
+}
+
+// ─── START ─────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
